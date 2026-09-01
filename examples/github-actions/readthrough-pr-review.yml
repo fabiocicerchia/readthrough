@@ -1,0 +1,100 @@
+name: readthrough
+
+# readthrough reviewing your pull requests. Copy this file into
+# .github/workflows/ of the repository you want reviewed.
+#
+# Only the files changed in the PR are scanned: small scope, bounded cost, and
+# the author still has the code in their head. Findings are uploaded as SARIF
+# so they land as inline annotations on the diff.
+#
+# Requires one secret: ANTHROPIC_API_KEY. Nothing else is installed on the
+# runner. Pin the version below to a tag, not to main.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: readthrough-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    # Needs the API key, so it cannot run for a fork's pull request: secrets are
+    # not exposed to those. Skip rather than fail red.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload SARIF
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install readthrough
+        run: pip install 'git+https://github.com/fabiocicerchia/readthrough.git@v1.0.0'
+
+      # Same rule as everywhere else: no inline `${{ }}` in a `run:` block.
+      # A branch name is lower risk than a tag, but the mechanism is identical
+      # — Actions expands the template into the script source, so the value
+      # cannot be quoted safely. Pass it as an env var and it stays data.
+      - name: Collect changed files
+        id: changed
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git diff --name-only --diff-filter=ACMR \
+            "origin/${BASE_REF}...HEAD" > /tmp/changed.txt
+          echo "count=$(wc -l < /tmp/changed.txt)" >> "$GITHUB_OUTPUT"
+          cat /tmp/changed.txt
+
+      - name: Stage changed files
+        if: steps.changed.outputs.count != '0'
+        run: |
+          mkdir -p /tmp/subject
+          while read -r f; do
+            [ -f "$f" ] || continue
+            mkdir -p "/tmp/subject/$(dirname "$f")"
+            cp "$f" "/tmp/subject/$f"
+          done < /tmp/changed.txt
+
+      - name: Audit
+        if: steps.changed.outputs.count != '0'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          readthrough scan /tmp/subject \
+            --out /tmp/report \
+            --lenses injection,authz,logic,errors \
+            --verify --verify-min-severity high \
+            --workers 4 --quiet
+
+      # Code scanning needs GitHub Advanced Security on a private repo; without
+      # it the upload fails and takes the whole job down after the scan has
+      # already been paid for. The job summary below carries the same findings.
+      - name: Upload SARIF
+        if: steps.changed.outputs.count != '0' && !github.event.repository.private
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3  # v4.37.6
+        with:
+          sarif_file: /tmp/report/findings.sarif
+          category: readthrough
+
+      - name: Job summary
+        if: always() && steps.changed.outputs.count != '0'
+        run: cat /tmp/report/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Advisory by default. To block merges on critical findings, uncomment:
+      # - name: Gate on critical findings
+      #   run: |
+      #     n=$(python -c "import json;d=json.load(open('/tmp/report/findings.json'));\
+      #     print(sum(1 for f in d['findings'] if f['severity']=='critical' \
+      #     and f.get('verdict')!='rejected'))")
+      #     [ "$n" -eq 0 ] || { echo "$n critical finding(s)"; exit 1; }

@@ -1,0 +1,26 @@
+# Keep build context small and free of secrets.
+.git
+.github
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/
+target/
+__pycache__/
+.venv/
+venv/
+*.log
+docs/
+examples/
+site/
+.ruff_cache/
+.pytest_cache/
+tests/
+
+# Scan output — reports and resumable state must never be baked into an image.
+readthrough-reports/
+scan.db
+scan.db-*
+*.sarif

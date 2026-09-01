@@ -1,14 +1,21 @@
-# codescan
+# readthrough
 
-Multi-pass LLM code audit with resumable state and explicit coverage accounting.
+> Multi-pass LLM code audit with resumable state and explicit coverage accounting.
+
+[![CI](https://github.com/fabiocicerchia/readthrough/actions/workflows/ci.yml/badge.svg)](https://github.com/fabiocicerchia/readthrough/actions/workflows/ci.yml)
+[![Code Quality](https://github.com/fabiocicerchia/readthrough/actions/workflows/code-quality.yml/badge.svg)](https://github.com/fabiocicerchia/readthrough/actions/workflows/code-quality.yml)
+[![Security](https://github.com/fabiocicerchia/readthrough/actions/workflows/security.yml/badge.svg)](https://github.com/fabiocicerchia/readthrough/actions/workflows/security.yml)
+[![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/fabiocicerchia/readthrough/badge)](https://securityscorecards.dev/viewer/?uri=github.com/fabiocicerchia/readthrough)
+[![CI carbon](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/fabiocicerchia/readthrough/gh-pages/badge.json)](.github/workflows/carbon-badge.yml)
 
 Built for the case where you have many repositories and need to know not just
 what was found, but what was actually looked at.
 
-## What it does
-
 For every source file it runs several **independent focused passes** rather
 than one general "find bugs" prompt, then merges the results.
+
+## Features
 
 - **Lenses, not repetition.** Each pass looks for one class of defect
   (injection, access control, invariants, error handling, concurrency,
@@ -34,42 +41,55 @@ than one general "find bugs" prompt, then merges the results.
 
 ## Install
 
-```bash
-pip install -r requirements.txt      # or: pip install -e .
+```sh
+curl -fsSL https://raw.githubusercontent.com/fabiocicerchia/readthrough/main/install.sh | sh
+```
+
+Or with pip / pipx:
+
+```sh
+pipx install git+https://github.com/fabiocicerchia/readthrough.git
+```
+
+Then set the API key:
+
+```sh
 export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## Use
+Python 3.10+. The only runtime dependency is the `anthropic` SDK.
 
-```bash
+## Usage
+
+```sh
 # Try the whole pipeline for free first — no API calls, deterministic stub.
-python -m codescan scan ./my-repo --fake --out /tmp/dry-run
+readthrough scan ./my-repo --fake --out /tmp/dry-run
 
 # See what a real run would cost before committing to it.
-python -m codescan scan ./my-repo --estimate-only
+readthrough scan ./my-repo --estimate-only
 
 # A real scan.
-python -m codescan scan ./my-repo --out reports/my-repo
+readthrough scan ./my-repo --out reports/my-repo
 
 # Tier-1 repo: strongest model, extended thinking, all lenses, verification.
-python -m codescan scan ./payments \
+readthrough scan ./payments \
   --model claude-opus-5 --thinking 6000 \
   --lenses injection,authz,secrets,logic,errors,concurrency,data \
   --repeat 2 --verify --out reports/payments
 
 # All 80 repos, plus a rollup ranking them by risk.
-python -m codescan multi ~/src --out reports/
+readthrough multi ~/src --out reports/
 
 # Rebuild reports from an existing scan without re-scanning.
-python -m codescan report reports/my-repo
+readthrough report reports/my-repo
 
-python -m codescan lenses     # list available lenses
+readthrough lenses     # list available lenses
 ```
 
 `multi` takes either a directory of repos or a text file of paths, one per
 line.
 
-## Output
+### Output
 
 Written to the output directory:
 
@@ -83,7 +103,7 @@ Written to the output directory:
 
 `multi` additionally writes `rollup.md` and `rollup.json` ranking every repo.
 
-## Cost control
+### Cost control
 
 Cost scales with `lines x lenses x repeats`. Levers, roughly in order of
 usefulness:
@@ -97,7 +117,7 @@ usefulness:
 
 Run `--estimate-only` on your largest repo before turning this loose on 80.
 
-## Fitting it to 80 repositories
+### Fitting it to a fleet
 
 Do not run the deep configuration everywhere. Rank first, then spend:
 
@@ -108,17 +128,19 @@ Do not run the deep configuration everywhere. Rank first, then spend:
    entirely and rely on CI static analysis.
 
 Then close the loop: every confirmed finding becomes a Semgrep rule in a
-shared ruleset all 80 repos consume. That is the part that compounds. This
+shared ruleset all the repos consume. That is the part that compounds. This
 tool finds instances; the rules stop the class from recurring. The report's
 "recurring defect classes" table is there to tell you which classes are worth
 writing a rule for.
 
 ## CI
 
-`.github/workflows/codescan.yml` in this repo scans only the files changed in
-a pull request and uploads SARIF, so findings appear as inline PR annotations.
-Per-PR review is the highest-value placement — small scope, and the author
-still has the code in their head.
+`.github/workflows/readthrough.yml` scans only the files changed in a pull
+request and uploads SARIF, so findings appear as inline PR annotations. Per-PR
+review is the highest-value placement — small scope, and the author still has
+the code in their head. See
+[`examples/github-actions/`](examples/github-actions/) for the version to drop
+into another repository.
 
 ## What this does not do
 
@@ -139,5 +161,24 @@ more than it deserves.
   to zero. Sort by severity and agreement, and read the code before acting.
 - **It is not a replacement for Semgrep, CodeQL, dependency scanning, or
   secret scanning.** Those are deterministic, free, and catch the boring
-  majority. Get them into CI across all 80 repos first. This tool is for the
-  reasoning-dependent defects they cannot express.
+  majority. Get them into CI first. This tool is for the reasoning-dependent
+  defects they cannot express.
+
+## Documentation
+
+Full docs live in [`docs/`](docs/). Runnable examples live in
+[`examples/`](examples/).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). By participating you agree to the
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+Found a vulnerability? See [SECURITY.md](SECURITY.md) — please don't open a
+public issue.
+
+## License
+
+[Apache 2.0](LICENSE) © 2026 Fabio Cicerchia

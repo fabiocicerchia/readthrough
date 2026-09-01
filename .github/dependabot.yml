@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # Keep the SHA-pinned actions fresh -- a pin with nothing bumping it is just
+  # a stale dependency.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+
+  # The pinned MkDocs toolchain (docs/requirements.txt) is hash-locked, so it
+  # needs its own entry to move at all.
+  - package-ecosystem: pip
+    directory: /docs
+    schedule:
+      interval: weekly

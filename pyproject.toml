@@ -1,13 +1,39 @@
 [project]
-name = "codescan"
+name = "readthrough"
 version = "1.0.0"
 description = "Multi-pass LLM code audit with resumable state and coverage accounting"
+readme = "README.md"
 requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Fabio Cicerchia" }]
+keywords = ["security", "code-review", "llm", "audit", "sarif"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = ["anthropic>=0.40"]
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.16"]
+
+[project.urls]
+Homepage = "https://fabiocicerchia.github.io/readthrough/"
+Documentation = "https://fabiocicerchia.github.io/readthrough/docs/"
+Source = "https://github.com/fabiocicerchia/readthrough"
+Issues = "https://github.com/fabiocicerchia/readthrough/issues"
+
 [project.scripts]
-codescan = "codescan.cli:main"
+readthrough = "readthrough.cli:main"
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# Explicit, so auto-discovery does not try to package tests/ alongside it.
+packages = ["readthrough"]
