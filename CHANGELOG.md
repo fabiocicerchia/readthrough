@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Releases are cut by release-please from Conventional Commit messages — don't
 edit the released sections by hand.
 
+## 1.0.0 (2026-09-01)
+
+
+### Features
+
+* initial readthrough implementation, CI and docs ([84cb8f7](https://github.com/fabiocicerchia/readthrough/commit/84cb8f75cb4ca044720010dad528a7a85bb36ea2))
+
 ## [Unreleased]
 
 ### Added
