@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Releases are cut by release-please from Conventional Commit messages — don't
 edit the released sections by hand.
 
+## [1.0.1](https://github.com/fabiocicerchia/readthrough/compare/v1.0.0...v1.0.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** pin the editorconfig-checker binary version ([#11](https://github.com/fabiocicerchia/readthrough/issues/11)) ([be99e44](https://github.com/fabiocicerchia/readthrough/commit/be99e44e975c45d5b5594787367362553c4b3501))
+
 ## 1.0.0 (2026-09-01)
 
 
