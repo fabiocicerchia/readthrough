@@ -1,0 +1,10 @@
+{
+  "Exclude": [
+    "^LICENSE$",
+    "^examples/basic/run\\.sh$",
+    "^install\\.sh$"
+  ],
+  "Disable": {
+    "IndentSize": true
+  }
+}
