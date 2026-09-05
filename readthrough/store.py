@@ -8,6 +8,12 @@ lists them so you know what was not covered.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .discover import FileInfo
+
 import json
 import sqlite3
 import threading
@@ -145,7 +151,7 @@ class Store:
         return conn
 
     # ---- meta -----------------------------------------------------------
-    def set_meta(self, key: str, value) -> None:
+    def set_meta(self, key: str, value: object) -> None:
         with self.lock:
             self.conn.execute(
                 "INSERT INTO meta(key,value) VALUES(?,?) "
@@ -153,13 +159,13 @@ class Store:
                 (key, json.dumps(value)))
             self.conn.commit()
 
-    def get_meta(self, key: str, default=None):
+    def get_meta(self, key: str, default: object = None) -> object:
         row = self.conn.execute("SELECT value FROM meta WHERE key=?",
                                 (key,)).fetchone()
         return json.loads(row["value"]) if row else default
 
     # ---- files ----------------------------------------------------------
-    def upsert_files(self, infos) -> None:
+    def upsert_files(self, infos: Iterable[FileInfo]) -> None:
         with self.lock:
             self.conn.executemany(
                 "INSERT INTO files(rel,abspath,sha256,lang,loc,size,status,note) "
@@ -196,10 +202,26 @@ class Store:
             "SELECT key FROM tasks WHERE status='done'").fetchall()
         return {r["key"] for r in rows}
 
-    def record_task(self, *, key, rel, sha256, lens, chunk_idx, repeat_idx,
-                    start_line, end_line, status, attempts, error,
-                    in_tokens, out_tokens, duration_ms, findings,
-                    served_model=None) -> None:
+    def record_task(  # noqa: PLR0913 — these are the task row's columns
+        self,
+        *,
+        key: str,
+        rel: str,
+        sha256: str,
+        lens: str,
+        chunk_idx: int,
+        repeat_idx: int,
+        start_line: int,
+        end_line: int,
+        status: str,
+        attempts: int,
+        error: str | None,
+        in_tokens: int,
+        out_tokens: int,
+        duration_ms: int,
+        findings: list[dict],
+        served_model: str | None = None,
+    ) -> None:
         """Task result and its findings land in one transaction.
 
         This is what makes a crash safe: a task is either fully recorded with
@@ -259,7 +281,11 @@ class Store:
                 "AND fi.sha256 = {alias}.sha256 ")
 
     def tasks(self, status: str | None = None) -> list[sqlite3.Row]:
-        sql = "SELECT t.* FROM tasks t " + self._CURRENT.format(alias="t")
+
+        # _CURRENT is a class constant, never user input.
+        sql = "SELECT t.* FROM tasks t " + self._CURRENT.format(  # noqa: S608 — class constant, not user input
+            alias="t"
+        )
         if status:
             return self.conn.execute(
                 sql + "WHERE t.status=? ORDER BY t.rel", (status,)).fetchall()
@@ -267,7 +293,7 @@ class Store:
 
     def raw_findings(self) -> list[sqlite3.Row]:
         return self.conn.execute(
-            "SELECT f.*, t.served_model FROM findings f "
+            "SELECT f.*, t.served_model FROM findings f "  # noqa: S608 — the joined clause is a class constant
             "LEFT JOIN tasks t ON t.key = f.task_key "
             + self._CURRENT.format(alias="f")
             + "ORDER BY f.rel, f.start_line").fetchall()
@@ -282,8 +308,16 @@ class Store:
         return row["i"] + vrow["i"], row["o"] + vrow["o"]
 
     # ---- verification ---------------------------------------------------
-    def set_verdict(self, fingerprint, verdict, reasoning, severity,
-                    in_tokens=0, out_tokens=0) -> None:
+    def set_verdict(  # noqa: PLR0913 — these are the verdict row's columns
+        self,
+        fingerprint: str,
+        verdict: str,
+        reasoning: str,
+        severity: str,
+        *,
+        in_tokens: int = 0,
+        out_tokens: int = 0,
+    ) -> None:
         with self.lock:
             self.conn.execute(
                 "INSERT INTO verdicts(fingerprint,verdict,reasoning,severity,"

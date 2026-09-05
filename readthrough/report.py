@@ -7,6 +7,11 @@ without that is unfalsifiable -- you cannot tell "clean" from "never looked".
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .store import Store
+
 import json
 from collections import Counter
 from datetime import datetime, timezone
@@ -18,7 +23,11 @@ SEV_LABEL = {"critical": "CRITICAL", "high": "HIGH",
              "medium": "MEDIUM", "low": "LOW"}
 
 
-def build_results(store) -> dict:
+# Past this many, the uncovered-files list stops being readable.
+MAX_UNCOVERED_LISTED = 60
+
+
+def build_results(store: Store) -> dict:
     files = [dict(r) for r in store.files()]
     tasks = [dict(r) for r in store.tasks()]
     merged = merge_findings(store.raw_findings())
@@ -83,11 +92,12 @@ def build_results(store) -> dict:
     }
 
 
-def _pct(n, d):
+def _pct(n: float, d: float) -> str:
     return f"{(100.0 * n / d):.1f}%" if d else "n/a"
 
 
-def render_markdown(res: dict, max_detail: int = 250) -> str:
+def render_markdown(  # noqa: PLR0912,PLR0915 — one section per report block, in order
+res: dict, max_detail: int = 250) -> str:
     m, cov, use = res["meta"], res["coverage"], res["usage"]
     findings = res["findings"]
     active = [f for f in findings if f.get("verdict") != "rejected"]
@@ -98,14 +108,14 @@ def render_markdown(res: dict, max_detail: int = 250) -> str:
     # built it. When there is more than one, each finding names its own.
     all_models = sorted({mo for f in findings for mo in (f.get("models") or [])})
     out = []
-    A = out.append
+    add = out.append
 
-    A(f"# Code audit: `{m['root']}`")
-    A("")
-    A(f"Generated {m['generated_at']} | model `{m['model']}` | "
+    add(f"# Code audit: `{m['root']}`")
+    add("")
+    add(f"Generated {m['generated_at']} | model `{m['model']}` | "
       f"lenses: {', '.join(m['lenses'])} | repeats: {m['repeats']}"
       + (" | verification pass: on" if m.get("verified") else ""))
-    A("")
+    add("")
 
     # The requested model is not evidence of what ran. A proxy may resolve an
     # alias (expected) or fall through to an unrelated provider (not), and a
@@ -117,94 +127,94 @@ def render_markdown(res: dict, max_detail: int = 250) -> str:
     # so the per-finding attribution below is the authoritative one.
     served = [s for s in m.get("served_models", []) if s != m["model"]]
     if served:
-        A(f"> **Requested `{m['model']}`; answered by "
+        add(f"> **Requested `{m['model']}`; answered by "
           f"{', '.join(f'`{s}`' for s in served)}.** A proxy may be resolving "
           f"an alias, or falling through to a different model entirely — judge "
           f"the findings against whatever actually answered. Passes cached "
           f"from an earlier run keep the model that answered *them*; each "
           f"finding names its own below.")
-        A("")
+        add("")
 
     # -- coverage ------------------------------------------------------
-    A("## Coverage")
-    A("")
-    A("| | |")
-    A("|---|---|")
-    A(f"| Files discovered | {cov['files_discovered']} |")
-    A(f"| Eligible for review | {cov['files_eligible']} "
+    add("## Coverage")
+    add("")
+    add("| | |")
+    add("|---|---|")
+    add(f"| Files discovered | {cov['files_discovered']} |")
+    add(f"| Eligible for review | {cov['files_eligible']} "
       f"({cov['total_loc']:,} lines) |")
-    A(f"| Scanned | {cov['files_scanned']} "
+    add(f"| Scanned | {cov['files_scanned']} "
       f"({_pct(cov['files_scanned'], cov['files_eligible'])}) |")
-    A(f"| Skipped by filter | {cov['files_skipped']} |")
-    A(f"| Never started | {cov['files_not_started']} |")
-    A(f"| Passes run | {cov['tasks_done']} of {cov['tasks_total']} |")
-    A(f"| Passes failed | {cov['tasks_failed']} |")
-    A(f"| Tokens | {use['input_tokens']:,} in / {use['output_tokens']:,} out |")
-    A("")
+    add(f"| Skipped by filter | {cov['files_skipped']} |")
+    add(f"| Never started | {cov['files_not_started']} |")
+    add(f"| Passes run | {cov['tasks_done']} of {cov['tasks_total']} |")
+    add(f"| Passes failed | {cov['tasks_failed']} |")
+    add(f"| Tokens | {use['input_tokens']:,} in / {use['output_tokens']:,} out |")
+    add("")
 
     if cov["files_uncovered"]:
-        A("> **Gaps.** These files produced no successful pass and are "
+        add("> **Gaps.** These files produced no successful pass and are "
           "therefore unreviewed:")
-        A("> ")
+        add("> ")
         for r in cov["files_uncovered"][:60]:
-            A(f"> - `{r}`")
-        if len(cov["files_uncovered"]) > 60:
-            A(f"> - ... and {len(cov['files_uncovered']) - 60} more")
-        A("")
+            add(f"> - `{r}`")
+        if len(cov["files_uncovered"]) > MAX_UNCOVERED_LISTED:
+            add(f"> - ... and {len(cov['files_uncovered']) - 60} more")
+        add("")
     if cov["files_partial"]:
-        A(f"> **Partial.** {len(cov['files_partial'])} files had at least one "
+        add(f"> **Partial.** {len(cov['files_partial'])} files had at least one "
           "pass fail; see the appendix. Their results are incomplete.")
-        A("")
+        add("")
     if cov["files_not_started"]:
-        A(f"> **Not started.** {cov['files_not_started']} eligible files were "
+        add(f"> **Not started.** {cov['files_not_started']} eligible files were "
           "never queued (run interrupted?). Re-run the same command to finish.")
-        A("")
+        add("")
 
     # -- summary -------------------------------------------------------
-    A("## Findings summary")
-    A("")
+    add("## Findings summary")
+    add("")
     if not active:
-        A("No findings survived merging and verification.")
-        A("")
+        add("No findings survived merging and verification.")
+        add("")
     else:
-        A("| Severity | Count |")
-        A("|---|---|")
+        add("| Severity | Count |")
+        add("|---|---|")
         for sev in ("critical", "high", "medium", "low"):
             if sev_counts.get(sev):
-                A(f"| {SEV_LABEL[sev]} | {sev_counts[sev]} |")
-        A(f"| **Total** | **{len(active)}** |")
-        A("")
+                add(f"| {SEV_LABEL[sev]} | {sev_counts[sev]} |")
+        add(f"| **Total** | **{len(active)}** |")
+        add("")
         if rejected:
-            A(f"{len(rejected)} additional findings were rejected by the "
+            add(f"{len(rejected)} additional findings were rejected by the "
               "verification pass and are listed in the appendix.")
-            A("")
+            add("")
 
         by_file = Counter(f["rel"] for f in active)
-        A("**Files with the most findings**")
-        A("")
-        A("| File | Findings |")
-        A("|---|---|")
+        add("**Files with the most findings**")
+        add("")
+        add("| File | Findings |")
+        add("|---|---|")
         for rel, n in by_file.most_common(12):
-            A(f"| `{rel}` | {n} |")
-        A("")
+            add(f"| `{rel}` | {n} |")
+        add("")
 
         by_cat = Counter(f["family"] for f in active)
-        A("**Recurring defect classes** — these are the candidates for a "
+        add("**Recurring defect classes** — these are the candidates for a "
           "Semgrep rule rather than a one-off fix.")
-        A("")
-        A("| Class | Count |")
-        A("|---|---|")
+        add("")
+        add("| Class | Count |")
+        add("|---|---|")
         for cat, n in by_cat.most_common(15):
-            A(f"| `{cat}` | {n} |")
-        A("")
+            add(f"| `{cat}` | {n} |")
+        add("")
 
     # -- detail --------------------------------------------------------
     if active:
-        A("## Findings")
-        A("")
+        add("## Findings")
+        add("")
         for i, f in enumerate(active[:max_detail], 1):
-            A(f"### {i}. {SEV_LABEL[f['severity']]} — {f['title']}")
-            A("")
+            add(f"### {i}. {SEV_LABEL[f['severity']]} — {f['title']}")
+            add("")
             loc = (f"`{f['rel']}`:{f['start_line']}"
                    + (f"-{f['end_line']}" if f["end_line"] != f["start_line"] else ""))
             total_passes = max(1, len(m["lenses"]) * m["repeats"])
@@ -217,93 +227,93 @@ def render_markdown(res: dict, max_detail: int = 250) -> str:
                 bits.insert(1, f"in `{f['symbol']}`")
             if f.get("verdict"):
                 bits.append(f"verification: {f['verdict']}")
-            A(" · ".join(bits))
-            A("")
-            A(f["explanation"])
-            A("")
+            add(" · ".join(bits))
+            add("")
+            add(f["explanation"])
+            add("")
             if f.get("trigger"):
-                A(f"**Trigger.** {f['trigger']}")
-                A("")
+                add(f"**Trigger.** {f['trigger']}")
+                add("")
             if f.get("assumptions"):
-                A(f"**Assumes.** {f['assumptions']}")
-                A("")
+                add(f"**Assumes.** {f['assumptions']}")
+                add("")
             if f.get("suggested_fix"):
-                A(f"**Fix.** {f['suggested_fix']}")
-                A("")
+                add(f"**Fix.** {f['suggested_fix']}")
+                add("")
             if f.get("suggested_test"):
-                A(f"**Regression test.** {f['suggested_test']}")
-                A("")
+                add(f"**Regression test.** {f['suggested_test']}")
+                add("")
             if f.get("verdict_reasoning"):
-                A(f"**Verification.** {f['verdict_reasoning']}")
-                A("")
+                add(f"**Verification.** {f['verdict_reasoning']}")
+                add("")
             if f.get("colocated_families"):
-                A("**Also flagged at these lines.** "
+                add("**Also flagged at these lines.** "
                   + ", ".join(f"`{c}`" for c in f["colocated_families"])
                   + " — this range is worth reading in full rather than "
                     "patching one line.")
-                A("")
+                add("")
             models = f.get("models") or []
             model_note = (f"model: {', '.join(models)} · "
                           if len(all_models) > 1 and models else "")
-            A(f"<sub>found by: {', '.join(f['lenses'])} · {model_note}"
+            add(f"<sub>found by: {', '.join(f['lenses'])} · {model_note}"
               f"fingerprint `{f['fingerprint']}`</sub>")
-            A("")
-            A("---")
-            A("")
+            add("")
+            add("---")
+            add("")
         if len(active) > max_detail:
-            A(f"*{len(active) - max_detail} further findings omitted from this "
+            add(f"*{len(active) - max_detail} further findings omitted from this "
               "document; all of them are in `findings.json`.*")
-            A("")
+            add("")
 
     # -- appendix ------------------------------------------------------
-    A("## Appendix")
-    A("")
+    add("## Appendix")
+    add("")
     if cov["failed_detail"]:
-        A("### Failed passes")
-        A("")
-        A("These passes did not complete. Re-running resumes them.")
-        A("")
-        A("| File | Lens | Lines | Attempts | Error |")
-        A("|---|---|---|---|---|")
+        add("### Failed passes")
+        add("")
+        add("These passes did not complete. Re-running resumes them.")
+        add("")
+        add("| File | Lens | Lines | Attempts | Error |")
+        add("|---|---|---|---|---|")
         for d in cov["failed_detail"][:100]:
             err = d["error"].replace("|", "\\|").replace("\n", " ")[:120]
-            A(f"| `{d['file']}` | {d['lens']} | {d['lines']} | "
+            add(f"| `{d['file']}` | {d['lens']} | {d['lines']} | "
               f"{d['attempts']} | {err} |")
-        A("")
+        add("")
     else:
-        A("### Failed passes")
-        A("")
-        A("None. Every queued pass completed.")
-        A("")
+        add("### Failed passes")
+        add("")
+        add("None. Every queued pass completed.")
+        add("")
 
     if rejected:
-        A("### Rejected by verification")
-        A("")
-        A("| File | Lines | Title | Why rejected |")
-        A("|---|---|---|---|")
+        add("### Rejected by verification")
+        add("")
+        add("| File | Lines | Title | Why rejected |")
+        add("|---|---|---|---|")
         for f in rejected[:80]:
             why = (f.get("verdict_reasoning") or "").replace("|", "\\|")[:160]
-            A(f"| `{f['rel']}` | {f['start_line']}-{f['end_line']} | "
+            add(f"| `{f['rel']}` | {f['start_line']}-{f['end_line']} | "
               f"{f['title'][:70]} | {why} |")
-        A("")
+        add("")
 
     if cov["skipped_detail"]:
-        A("### Skipped files")
-        A("")
+        add("### Skipped files")
+        add("")
         reasons = Counter(d["reason"].split("(")[0].strip()
                           for d in cov["skipped_detail"])
-        A("| Reason | Count |")
-        A("|---|---|")
+        add("| Reason | Count |")
+        add("|---|---|")
         for r, n in reasons.most_common():
-            A(f"| {r} | {n} |")
-        A("")
-        A("<details><summary>Full list</summary>")
-        A("")
+            add(f"| {r} | {n} |")
+        add("")
+        add("<details><summary>Full list</summary>")
+        add("")
         for d in cov["skipped_detail"][:400]:
-            A(f"- `{d['file']}` — {d['reason']}")
-        A("")
-        A("</details>")
-        A("")
+            add(f"- `{d['file']}` — {d['reason']}")
+        add("")
+        add("</details>")
+        add("")
 
     return "\n".join(out)
 
