@@ -281,7 +281,6 @@ class Engine:
         """Deterministic stub. Exercises the full pipeline for free."""
         seed = int(hashlib.sha256(user.encode()).hexdigest()[:8], 16)
         rng = random.Random(seed)
-        time.sleep(0.01)
 
         if "Claimed finding" in user:
             v = rng.choice(["confirmed", "confirmed", "rejected", "uncertain"])
