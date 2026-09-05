@@ -173,7 +173,9 @@ class Store:
             self.conn.commit()
 
     def files(self) -> list[sqlite3.Row]:
-        return self.conn.execute("SELECT * FROM files ORDER BY rel").fetchall()
+        return self.conn.execute(
+            "SELECT rel, abspath, sha256, lang, loc, size, status, note "
+            "FROM files ORDER BY rel").fetchall()
 
     def abspath(self, rel: str) -> str:
         row = self.conn.execute("SELECT abspath FROM files WHERE rel=?",
@@ -223,18 +225,17 @@ class Store:
                     (key, rel, sha256, lens, chunk_idx, repeat_idx, start_line,
                      end_line, status, attempts, error, in_tokens, out_tokens,
                      duration_ms, time.time(), served_model))
-                for f in findings:
-                    cur.execute(
-                        "INSERT INTO findings(task_key,rel,sha256,lens,repeat_idx,"
-                        "category,severity,confidence,start_line,end_line,symbol,"
-                        "title,explanation,trigger,assumptions,fix,test) "
-                        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                        (key, rel, sha256, lens, repeat_idx,
-                         f.get("category"), f.get("severity"), f.get("confidence"),
-                         f.get("start_line"), f.get("end_line"), f.get("symbol"),
-                         f.get("title"), f.get("explanation"), f.get("trigger"),
-                         f.get("assumptions"), f.get("suggested_fix"),
-                         f.get("suggested_test")))
+                cur.executemany(
+                    "INSERT INTO findings(task_key,rel,sha256,lens,repeat_idx,"
+                    "category,severity,confidence,start_line,end_line,symbol,"
+                    "title,explanation,trigger,assumptions,fix,test) "
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    [(key, rel, sha256, lens, repeat_idx,
+                      f.get("category"), f.get("severity"), f.get("confidence"),
+                      f.get("start_line"), f.get("end_line"), f.get("symbol"),
+                      f.get("title"), f.get("explanation"), f.get("trigger"),
+                      f.get("assumptions"), f.get("suggested_fix"),
+                      f.get("suggested_test")) for f in findings])
                 cur.execute("COMMIT")
             except Exception:
                 cur.execute("ROLLBACK")
@@ -296,7 +297,9 @@ class Store:
 
     def verdicts(self) -> dict:
         return {r["fingerprint"]: dict(r)
-                for r in self.conn.execute("SELECT * FROM verdicts").fetchall()}
+                for r in self.conn.execute(
+                    "SELECT fingerprint, verdict, reasoning, severity, "
+                    "in_tokens, out_tokens FROM verdicts").fetchall()}
 
     def close(self) -> None:
         with self.lock:
