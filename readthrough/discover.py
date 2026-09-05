@@ -46,6 +46,13 @@ IGNORE_NAME_PARTS = (
 )
 
 
+# A file is treated as text when this share of a sample is printable ASCII.
+TAB, CR = 9, 13
+SPACE, TILDE = 32, 126
+HIGH_BIT = 128
+PRINTABLE_RATIO = 0.85
+
+
 @dataclass
 class FileInfo:
     path: str          # absolute
@@ -80,16 +87,19 @@ def _is_probably_binary(data: bytes) -> bool:
     if not data:
         return False
     sample = data[:8192]
-    printable = sum(1 for b in sample if 9 <= b <= 13 or 32 <= b <= 126 or b >= 128)
-    return printable / len(sample) < 0.85
+    printable = sum(
+        1 for b in sample if TAB <= b <= CR or SPACE <= b <= TILDE or b >= HIGH_BIT
+    )
+    return printable / len(sample) < PRINTABLE_RATIO
 
 
 def _git_tracked(root: Path) -> list[str] | None:
     """Use git's index when available -- it already honours .gitignore."""
     try:
-        out = subprocess.run(
-            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others",
+        out = subprocess.run(  # noqa: S603 — fixed git argv, never a shell
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others",  # noqa: S607 — git from PATH on purpose
              "--exclude-standard"],
+            check=False,
             capture_output=True, timeout=60,
         )
         if out.returncode != 0:
@@ -110,7 +120,8 @@ def _walk(root: Path) -> list[str]:
     return rels
 
 
-def discover_files(
+def discover_files(  # noqa: PLR0912 — one branch per skip reason; merging them would hide the reason
+
     root: Path,
     max_bytes: int = 400_000,
     include_exts: set[str] | None = None,

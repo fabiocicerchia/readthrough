@@ -13,6 +13,7 @@ rarely noise; one reported once at low confidence usually is.
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Iterable
 
 PROXIMITY = 6  # lines; ranges this close are treated as the same defect
 
@@ -40,11 +41,11 @@ def _family(category: str) -> str:
 
 
 def fingerprint(rel: str, family: str, start: int, end: int) -> str:
-    h = hashlib.sha1(f"{rel}|{family}|{start}|{end}".encode()).hexdigest()
+    h = hashlib.sha1(f"{rel}|{family}|{start}|{end}".encode(), usedforsecurity=False).hexdigest()
     return h[:16]
 
 
-def merge_findings(rows) -> list[dict]:
+def merge_findings(rows: Iterable[dict]) -> list[dict]:
     """rows: sqlite Rows (or dicts) of raw findings. Returns merged findings."""
     items = [dict(r) for r in rows]
     for it in items:
@@ -127,7 +128,7 @@ def _collapse(rel: str, family: str, cl: list[dict]) -> dict:
     confidence = min((c["confidence"] for c in cl),
                      key=lambda s: CONF_RANK.get(s, 9))
 
-    def _longest(key):
+    def _longest(key: str) -> str | None:
         vals = [c.get(key) for c in cl if c.get(key)]
         return max(vals, key=len) if vals else None
 

@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from types import FrameType
+
+    from .store import Store
+
 import argparse
 import json
 import os
@@ -13,6 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
+from . import console
 from .discover import chunk_file, discover_files, read_span
 from .engine import Engine, PermanentError
 from .lenses import DEFAULT_LENSES, LENSES
@@ -25,15 +33,16 @@ DEFAULT_MODEL = "claude-sonnet-5"
 _stop = threading.Event()
 
 
-def _install_sigint():
-    def handler(signum, frame):
+def _install_sigint() -> None:
+    def handler(signum: int, frame: FrameType | None) -> None:
         if _stop.is_set():
-            print("\nforced exit", file=sys.stderr)
+            console.err("\nforced exit")
             os._exit(130)
         _stop.set()
-        print("\nstopping after in-flight passes finish; progress is saved, "
-              "re-run the same command to resume (Ctrl-C again to force)",
-              file=sys.stderr)
+        console.err(
+            "\nstopping after in-flight passes finish; progress is saved, "
+            "re-run the same command to resume (Ctrl-C again to force)"
+        )
     signal.signal(signal.SIGINT, handler)
 
 
@@ -48,7 +57,7 @@ class Progress:
         self.lock = threading.Lock()
         self.t0 = time.time()
 
-    def tick(self, ok: bool, n_findings: int = 0):
+    def tick(self, ok: bool, n_findings: int = 0) -> None:
         with self.lock:
             self.done += 1
             if not ok:
@@ -65,15 +74,15 @@ class Progress:
                 f"eta {int(eta // 60)}m{int(eta % 60):02d}s   ")
             sys.stderr.flush()
 
-    def finish(self):
+    def finish(self) -> None:
         if not self.quiet:
             sys.stderr.write("\n")
 
 
-def cmd_scan(args) -> int:
+def cmd_scan(args: argparse.Namespace) -> int:  # noqa: PLR0912,PLR0915 — the scan pipeline, in the order it runs
     root = Path(args.path).resolve()
     if not root.is_dir():
-        print(f"not a directory: {root}", file=sys.stderr)
+        console.err(f"not a directory: {root}")
         return 2
 
     outdir = Path(args.out) if args.out else Path("readthrough-reports") / root.name
@@ -82,13 +91,13 @@ def cmd_scan(args) -> int:
     lens_ids = [x.strip() for x in args.lenses.split(",") if x.strip()]
     unknown = [x for x in lens_ids if x not in LENSES]
     if unknown:
-        print(f"unknown lenses: {', '.join(unknown)}\n"
-              f"available: {', '.join(LENSES)}", file=sys.stderr)
+        console.err(
+            f"unknown lenses: {', '.join(unknown)}\navailable: {', '.join(LENSES)}"
+        )
         return 2
 
     if not args.fake and not os.environ.get("ANTHROPIC_API_KEY"):
-        print("ANTHROPIC_API_KEY is not set (use --fake to dry-run)",
-              file=sys.stderr)
+        console.err("ANTHROPIC_API_KEY is not set (use --fake to dry-run)")
         return 2
 
     store = Store(outdir / "scan.db")
@@ -101,7 +110,7 @@ def cmd_scan(args) -> int:
         store.set_meta("started_at",
                        datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
-    print(f"scanning {root}")
+    console.out(f"scanning {root}")
     include = ({e if e.startswith(".") else "." + e
                 for e in args.ext.split(",")} if args.ext else None)
     files = discover_files(root, max_bytes=args.max_file_bytes,
@@ -112,13 +121,13 @@ def cmd_scan(args) -> int:
 
     eligible = [f for f in files if f.status == "pending"]
     skipped = len(files) - len(eligible)
-    print(f"  {len(eligible)} files eligible, {skipped} skipped, "
+    console.out(f"  {len(eligible)} files eligible, {skipped} skipped, "
           f"{sum(f.loc for f in eligible):,} lines")
 
     if args.limit:
         eligible.sort(key=lambda f: -f.loc)
         eligible = eligible[:args.limit]
-        print(f"  --limit: reviewing the {len(eligible)} largest")
+        console.out(f"  --limit: reviewing the {len(eligible)} largest")
 
     # Build the task list, dropping anything already completed.
     completed = set() if args.force else store.completed_keys()
@@ -136,17 +145,17 @@ def cmd_scan(args) -> int:
 
     resumed = total_planned - len(tasks)
     if resumed > 0:
-        print(f"  resuming: {resumed} passes already complete")
-    print(f"  {len(tasks)} passes to run "
+        console.out(f"  resuming: {resumed} passes already complete")
+    console.out(f"  {len(tasks)} passes to run "
           f"({len(lens_ids)} lenses x {args.repeat} repeat(s))")
 
     if not tasks:
-        print("  nothing to do")
+        console.out("  nothing to do")
     else:
         if args.estimate_only:
             est_in = sum(len(c.numbered) // 3.5 + 1500
                          for _, _, c, _, _ in tasks)
-            print(f"\nestimate: ~{int(est_in):,} input tokens, "
+            console.out(f"\nestimate: ~{int(est_in):,} input tokens, "
                   f"~{len(tasks) * 500:,} output tokens")
             store.close()
             return 0
@@ -157,7 +166,7 @@ def cmd_scan(args) -> int:
         _install_sigint()
         prog = Progress(len(tasks), quiet=args.quiet)
 
-        def run(t):
+        def run(t: tuple) -> None:
             key, info, chunk, lens, rep = t
             if _stop.is_set():
                 return None
@@ -183,7 +192,7 @@ def cmd_scan(args) -> int:
             prog.tick(status == "done", len(findings))
             return status
 
-        print()
+        console.out()
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
             futs = [pool.submit(run, t) for t in tasks]
             for fut in as_completed(futs):
@@ -210,7 +219,7 @@ def cmd_scan(args) -> int:
     return 0
 
 
-def _verify(store, args, lens_ids) -> None:
+def _verify(store: Store, args: argparse.Namespace, lens_ids: list[str]) -> None:
     merged = merge_findings(store.raw_findings())
     have = store.verdicts()
     floor = {"critical": 0, "high": 1, "medium": 2, "low": 3}
@@ -221,12 +230,12 @@ def _verify(store, args, lens_ids) -> None:
     if not todo:
         return
 
-    print(f"\nverifying {len(todo)} findings "
+    console.out(f"\nverifying {len(todo)} findings "
           f"(severity >= {args.verify_min_severity})")
     engine = Engine(args.model, max_tokens=2000, fake=args.fake)
     prog = Progress(len(todo), quiet=args.quiet)
 
-    def check(f):
+    def check(f: dict) -> None:
         if _stop.is_set():
             return
         code = read_span(store.abspath(f["rel"]), f["start_line"], f["end_line"])
@@ -252,37 +261,37 @@ def _summarise(res: dict, paths: dict) -> None:
     active = [f for f in res["findings"] if f.get("verdict") != "rejected"]
     sev = {s: sum(1 for f in active if f["severity"] == s)
            for s in ("critical", "high", "medium", "low")}
-    print()
-    print(f"  coverage : {cov['files_scanned']}/{cov['files_eligible']} files, "
+    console.out()
+    console.out(f"  coverage : {cov['files_scanned']}/{cov['files_eligible']} files, "
           f"{cov['tasks_done']}/{cov['tasks_total']} passes")
     if cov["tasks_failed"]:
-        print(f"  FAILED   : {cov['tasks_failed']} passes "
+        console.out(f"  FAILED   : {cov['tasks_failed']} passes "
               f"({len(cov['files_uncovered'])} files left unreviewed) "
               f"-- re-run to retry")
-    print(f"  findings : {sev['critical']} critical, {sev['high']} high, "
+    console.out(f"  findings : {sev['critical']} critical, {sev['high']} high, "
           f"{sev['medium']} medium, {sev['low']} low")
-    print(f"  tokens   : {res['usage']['input_tokens']:,} in / "
+    console.out(f"  tokens   : {res['usage']['input_tokens']:,} in / "
           f"{res['usage']['output_tokens']:,} out")
-    print(f"  report   : {paths['markdown']}")
+    console.out(f"  report   : {paths['markdown']}")
 
 
-def cmd_report(args) -> int:
+def cmd_report(args: argparse.Namespace) -> int:
     db = Path(args.dir) / "scan.db"
     if not db.exists():
-        print(f"no scan.db in {args.dir}", file=sys.stderr)
+        console.err(f"no scan.db in {args.dir}")
         return 2
     store = Store(db)
     res = build_results(store)
     store.close()
     if args.stdout:
-        print(render_markdown(res))
+        console.out(render_markdown(res))
     else:
         paths = write_reports(res, Path(args.dir))
         _summarise(res, paths)
     return 0
 
 
-def cmd_multi(args) -> int:
+def cmd_multi(args: argparse.Namespace) -> int:
     """Scan many repositories and write a rollup index."""
     listing = Path(args.list)
     if listing.is_dir():
@@ -298,9 +307,9 @@ def cmd_multi(args) -> int:
     rollup = []
 
     for i, repo in enumerate(repos, 1):
-        print(f"\n=== [{i}/{len(repos)}] {repo.name} " + "=" * 30)
+        console.out(f"\n=== [{i}/{len(repos)}] {repo.name} " + "=" * 30)
         if not repo.is_dir():
-            print(f"  skipping, not a directory: {repo}")
+            console.out(f"  skipping, not a directory: {repo}")
             rollup.append({"repo": str(repo), "error": "not a directory"})
             continue
         sub = argparse.Namespace(**vars(args))
@@ -326,10 +335,10 @@ def cmd_multi(args) -> int:
                 "report": str(outroot / repo.name / "report.md"),
             })
         except Exception as exc:
-            print(f"  repo failed: {exc}", file=sys.stderr)
+            console.err(f"  repo failed: {exc}")
             rollup.append({"repo": repo.name, "error": str(exc)})
         if _stop.is_set():
-            print("stopping; remaining repos not scanned")
+            console.out("stopping; remaining repos not scanned")
             break
 
     rollup.sort(key=lambda r: (-(r.get("critical", 0) * 10 + r.get("high", 0))))
@@ -358,15 +367,15 @@ def cmd_multi(args) -> int:
                              f"`{t['file']}:{t['line']}` — {t['title']}")
             lines.append("")
     (outroot / "rollup.md").write_text("\n".join(lines), encoding="utf-8")
-    print(f"\nrollup: {outroot / 'rollup.md'}")
+    console.out(f"\nrollup: {outroot / 'rollup.md'}")
     return 0
 
 
-def cmd_lenses(args) -> int:
+def cmd_lenses(args: argparse.Namespace) -> int:
     for lid, lens in LENSES.items():
         mark = "*" if lid in DEFAULT_LENSES else " "
-        print(f"{mark} {lid:<12} {lens.title}")
-    print("\n* = enabled by default")
+        console.out(f"{mark} {lid:<12} {lens.title}")
+    console.out("\n* = enabled by default")
     return 0
 
 
@@ -377,7 +386,7 @@ def build_parser() -> argparse.ArgumentParser:
                     "explicit coverage accounting.")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    def common(sp):
+    def common(sp: argparse.ArgumentParser) -> None:
         sp.add_argument("--out", "-o", help="output directory")
         sp.add_argument("--model", default=os.environ.get("READTHROUGH_MODEL",
                                                           DEFAULT_MODEL))
@@ -433,7 +442,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv=None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if getattr(args, "out", None) is None and args.cmd == "multi":
         args.out = "readthrough-reports"

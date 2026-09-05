@@ -11,6 +11,11 @@ Three things here matter for reliability:
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .discover import Chunk
+
 import hashlib
 import json
 import random
@@ -19,8 +24,7 @@ import threading
 import time
 from dataclasses import dataclass
 
-from .lenses import (CONFIDENCES, LENSES, SEVERITIES, SYSTEM_PROMPT,
-                     USER_TEMPLATE, VERIFY_SYSTEM, VERIFY_TEMPLATE)
+from .lenses import CONFIDENCES, LENSES, SEVERITIES, SYSTEM_PROMPT, USER_TEMPLATE, VERIFY_SYSTEM, VERIFY_TEMPLATE
 
 MAX_ATTEMPTS = 5
 BASE_BACKOFF = 2.0
@@ -37,12 +41,22 @@ class Usage:
     in_tokens: int = 0
     out_tokens: int = 0
 
-    def add(self, other: "Usage") -> None:
+    def add(self, other: Usage) -> None:
         self.in_tokens += other.in_tokens
         self.out_tokens += other.out_tokens
 
 
-def _extract_json(text: str) -> dict | None:
+def _clean(item: dict, key: str) -> str | None:
+    """A model-supplied string field, or None when it said nothing.
+
+    At module scope rather than nested in the parse loop: closing over the loop
+    variable is a bug waiting for the day someone stores the callable.
+    """
+    v = item.get(key)
+    return str(v).strip() if v not in (None, "", "null") else None
+
+
+def _extract_json(text: str) -> dict | None:  # noqa: PLR0912 — one branch per shape the model returns
     """Pull a JSON object out of a response that may have stray wrapping."""
     if not text:
         return None
@@ -120,17 +134,13 @@ def _clean_findings(obj: dict, lens_id: str, lo: int, hi: int) -> list[dict]:
         if cat not in lens.categories:
             cat = lens.categories[-1] if lens.categories else lens_id
 
-        def _s(key):
-            v = item.get(key)
-            return str(v).strip() if v not in (None, "", "null") else None
-
         out.append({
             "title": title[:200], "category": cat, "severity": sev,
             "confidence": conf, "start_line": s, "end_line": e,
-            "symbol": _s("symbol"), "explanation": expl,
-            "trigger": _s("trigger"), "assumptions": _s("assumptions"),
-            "suggested_fix": _s("suggested_fix"),
-            "suggested_test": _s("suggested_test"),
+            "symbol": _clean(item, "symbol"), "explanation": expl,
+            "trigger": _clean(item, "trigger"), "assumptions": _clean(item, "assumptions"),
+            "suggested_fix": _clean(item, "suggested_fix"),
+            "suggested_test": _clean(item, "suggested_test"),
         })
     return out
 
@@ -156,7 +166,7 @@ class Engine:
         # threading a return value through every call site.
         self._local = threading.local()
         if not fake:
-            from anthropic import Anthropic
+            from anthropic import Anthropic  # noqa: PLC0415 — optional dependency, imported on first use
             self.client = Anthropic(max_retries=0)  # we own the retry policy
 
     # ---- transport ------------------------------------------------------
@@ -189,7 +199,7 @@ class Engine:
         if self.fake:
             return self._fake(system, user)
 
-        import anthropic
+        import anthropic  # noqa: PLC0415 — optional dependency, imported on first use
         last = None
         for attempt in range(MAX_ATTEMPTS):
             try:
@@ -205,7 +215,7 @@ class Engine:
                 raise PermanentError(str(exc)) from exc
 
             if attempt < MAX_ATTEMPTS - 1:
-                delay = BASE_BACKOFF * (2 ** attempt) + random.uniform(0, 1.5)
+                delay = BASE_BACKOFF * (2 ** attempt) + random.uniform(0, 1.5)  # noqa: S311 — retry jitter, not a secret
                 time.sleep(min(delay, 60))
         raise RuntimeError(f"exhausted {MAX_ATTEMPTS} attempts: {last}")
 
@@ -215,7 +225,7 @@ class Engine:
         return getattr(self._local, "served", None)
 
     # ---- scanning -------------------------------------------------------
-    def scan_chunk(self, chunk, lens_id: str) -> tuple[list[dict], Usage]:
+    def scan_chunk(self, chunk: Chunk, lens_id: str) -> tuple[list[dict], Usage]:
         lens = LENSES[lens_id]
         chunk_note = ""
         context_note = "\n"
@@ -280,7 +290,7 @@ class Engine:
     def _fake(self, system: str, user: str) -> tuple[str, Usage]:
         """Deterministic stub. Exercises the full pipeline for free."""
         seed = int(hashlib.sha256(user.encode()).hexdigest()[:8], 16)
-        rng = random.Random(seed)
+        rng = random.Random(seed)  # noqa: S311 — reproducible sampling, not a secret
         time.sleep(0.01)
 
         if "Claimed finding" in user:
