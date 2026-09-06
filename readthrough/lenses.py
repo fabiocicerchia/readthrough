@@ -13,7 +13,7 @@ class Lens:
     id: str
     title: str
     focus: str
-    categories: tuple = field(default=())
+    categories: tuple[str, ...] = field(default=())
 
 
 LENSES = {

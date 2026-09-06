@@ -13,7 +13,10 @@ rarely noise; one reported once at low confidence usually is.
 from __future__ import annotations
 
 import hashlib
+import sqlite3
 from collections.abc import Iterable
+
+from readthrough.types import Finding
 
 PROXIMITY = 6  # lines; ranges this close are treated as the same defect
 
@@ -45,21 +48,21 @@ def fingerprint(rel: str, family: str, start: int, end: int) -> str:
     return h[:16]
 
 
-def merge_findings(rows: Iterable[dict]) -> list[dict]:
+def merge_findings(rows: Iterable[Finding | sqlite3.Row]) -> list[Finding]:
     """rows: sqlite Rows (or dicts) of raw findings. Returns merged findings."""
     items = [dict(r) for r in rows]
     for it in items:
         it["family"] = _family(it.get("category") or "")
 
-    by_group: dict[tuple, list[dict]] = {}
+    by_group: dict[tuple[str, str], list[Finding]] = {}
     for it in items:
         by_group.setdefault((it["rel"], it["family"]), []).append(it)
 
-    merged: list[dict] = []
+    merged: list[Finding] = []
     for (rel, family), group in by_group.items():
         group.sort(key=lambda x: (x["start_line"] or 0, x["end_line"] or 0))
 
-        clusters: list[list[dict]] = []
+        clusters: list[list[Finding]] = []
         for it in group:
             placed = False
             for cl in clusters:
@@ -82,7 +85,7 @@ def merge_findings(rows: Iterable[dict]) -> list[dict]:
     return merged
 
 
-def _annotate_colocation(merged: list[dict], items: list[dict]) -> None:
+def _annotate_colocation(merged: list[Finding], items: list[Finding]) -> None:
     """Count passes that flagged *anything* overlapping each finding's range.
 
     Different lenses describe the same underlying defect in different words
@@ -93,7 +96,7 @@ def _annotate_colocation(merged: list[dict], items: list[dict]) -> None:
     something at those lines. That is the corroboration signal, and it is what
     triage should sort on.
     """
-    by_file: dict[str, list[dict]] = {}
+    by_file: dict[str, list[Finding]] = {}
     for it in items:
         by_file.setdefault(it["rel"], []).append(it)
 
@@ -112,7 +115,7 @@ def _annotate_colocation(merged: list[dict], items: list[dict]) -> None:
             - {f["family"]})
 
 
-def _collapse(rel: str, family: str, cl: list[dict]) -> dict:
+def _collapse(rel: str, family: str, cl: list[Finding]) -> Finding:
     lo = min(c["start_line"] for c in cl)
     hi = max(c["end_line"] for c in cl)
 
@@ -129,7 +132,12 @@ def _collapse(rel: str, family: str, cl: list[dict]) -> dict:
                      key=lambda s: CONF_RANK.get(s, 9))
 
     def _longest(key: str) -> str | None:
-        vals = [c.get(key) for c in cl if c.get(key)]
+        """The fullest wording any pass gave this field.
+
+        Passes describe the same defect at different lengths; the longest is
+        the one with the detail, and an empty one is not a description.
+        """
+        vals: list[str] = [str(c[key]) for c in cl if c.get(key)]
         return max(vals, key=len) if vals else None
 
     return {
@@ -160,7 +168,7 @@ def _collapse(rel: str, family: str, cl: list[dict]) -> dict:
     }
 
 
-def priority_score(f: dict) -> float:
+def priority_score(f: Finding) -> float:
     """Ordering for triage: severity dominates, agreement and confidence adjust."""
     base = {"critical": 100.0, "high": 70.0, "medium": 40.0, "low": 15.0}
     score = base.get(f["severity"], 30.0)

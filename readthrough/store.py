@@ -20,6 +20,8 @@ import threading
 import time
 from pathlib import Path
 
+from readthrough.types import Finding
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY,
@@ -219,7 +221,7 @@ class Store:
         in_tokens: int,
         out_tokens: int,
         duration_ms: int,
-        findings: list[dict],
+        findings: list[Finding],
         served_model: str | None = None,
     ) -> None:
         """Task result and its findings land in one transaction.
@@ -328,7 +330,7 @@ class Store:
                 (fingerprint, verdict, reasoning, severity, in_tokens, out_tokens))
             self.conn.commit()
 
-    def verdicts(self) -> dict:
+    def verdicts(self) -> dict[str, Finding]:
         return {r["fingerprint"]: dict(r)
                 for r in self.conn.execute("SELECT * FROM verdicts").fetchall()}
 

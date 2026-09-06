@@ -110,7 +110,7 @@ def _git_tracked(root: Path) -> list[str] | None:
 
 
 def _walk(root: Path) -> list[str]:
-    rels = []
+    rels: list[str] = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in IGNORE_DIRS
                        and not d.startswith(".")]
@@ -217,7 +217,7 @@ def chunk_file(info: FileInfo, chunk_lines: int = 350,
     if len(lines) <= chunk_lines:
         spans = [(0, len(lines))]
     else:
-        spans = []
+        spans: list[tuple[int, int]] = []
         step = max(1, chunk_lines - overlap)
         start = 0
         while start < len(lines):
@@ -228,7 +228,7 @@ def chunk_file(info: FileInfo, chunk_lines: int = 350,
             start += step
 
     width = len(str(len(lines)))
-    chunks = []
+    chunks: list[Chunk] = []
     for idx, (s, e) in enumerate(spans):
         body = "\n".join(f"{i + 1:>{width}}| {lines[i]}" for i in range(s, e))
         chunks.append(Chunk(

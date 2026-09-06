@@ -14,6 +14,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from anthropic import Anthropic
+    from anthropic.types import Message
+
     from .discover import Chunk
 
 import hashlib
@@ -23,6 +26,9 @@ import re
 import threading
 import time
 from dataclasses import dataclass
+from typing import cast
+
+from readthrough.types import Finding, Json
 
 from .lenses import CONFIDENCES, LENSES, SEVERITIES, SYSTEM_PROMPT, USER_TEMPLATE, VERIFY_SYSTEM, VERIFY_TEMPLATE
 
@@ -46,7 +52,7 @@ class Usage:
         self.out_tokens += other.out_tokens
 
 
-def _clean(item: dict, key: str) -> str | None:
+def _clean(item: Finding, key: str) -> str | None:
     """A model-supplied string field, or None when it said nothing.
 
     At module scope rather than nested in the parse loop: closing over the loop
@@ -56,7 +62,16 @@ def _clean(item: dict, key: str) -> str | None:
     return str(v).strip() if v not in (None, "", "null") else None
 
 
-def _extract_json(text: str) -> dict | None:  # noqa: PLR0912 — one branch per shape the model returns
+def _as_json(value: object) -> Json | None:
+    """A decoded JSON value as an object, or None when it is anything else.
+
+    json.loads only ever produces str keys, so the cast states what the decoder
+    guarantees and cannot state in its own return type.
+    """
+    return cast("Json", value) if isinstance(value, dict) else None
+
+
+def _extract_json(text: str) -> Json | None:  # noqa: PLR0912 — one branch per shape the model returns
     """Pull a JSON object out of a response that may have stray wrapping."""
     if not text:
         return None
@@ -64,8 +79,7 @@ def _extract_json(text: str) -> dict | None:  # noqa: PLR0912 — one branch per
     t = re.sub(r"^```(?:json)?\s*", "", t)
     t = re.sub(r"\s*```$", "", t).strip()
     try:
-        obj = json.loads(t)
-        return obj if isinstance(obj, dict) else None
+        return _as_json(json.loads(t))
     except json.JSONDecodeError:
         pass
     # Fall back to the first balanced object in the text.
@@ -91,31 +105,34 @@ def _extract_json(text: str) -> dict | None:  # noqa: PLR0912 — one branch per
             depth -= 1
             if depth == 0:
                 try:
-                    obj = json.loads(t[start:i + 1])
-                    return obj if isinstance(obj, dict) else None
+                    return _as_json(json.loads(t[start : i + 1]))
                 except json.JSONDecodeError:
                     return None
     return None
 
 
-def _clean_findings(obj: dict, lens_id: str, lo: int, hi: int) -> list[dict]:
+def _clean_findings(obj: Json, lens_id: str, lo: int, hi: int) -> list[Finding]:
     """Validate and normalise. Anything unusable is dropped, not guessed at."""
-    raw = obj.get("findings")
+    raw: object = obj.get("findings")
     if not isinstance(raw, list):
         return []
+    raw_items: list[object] = raw  # pyright: ignore[reportUnknownVariableType]
     lens = LENSES[lens_id]
-    out = []
-    for item in raw:
-        if not isinstance(item, dict):
+    out: list[Finding] = []
+    for raw_item in raw_items:
+        # The model wrote this: every field below is coerced or dropped, and
+        # anything that is not an object at all is not a finding.
+        item = _as_json(raw_item)
+        if item is None:
             continue
         title = str(item.get("title") or "").strip()
         expl = str(item.get("explanation") or "").strip()
         if not title or not expl:
             continue
         try:
-            s = int(item.get("start_line"))
+            s = int(item["start_line"])
             e = int(item.get("end_line", s))
-        except (TypeError, ValueError):
+        except (KeyError, TypeError, ValueError):
             continue
         if e < s:
             s, e = e, s
@@ -154,7 +171,8 @@ class Engine:
         self.thinking_budget = thinking_budget
         self.fake = fake
         self.temperature = temperature
-        self.client = None
+        # None on a fake run; _call_once refuses to run without it.
+        self.client: Anthropic | None = None
         # Every distinct model that actually served a response. Behind a proxy
         # that rotates providers, an unknown model name silently falls through
         # to whatever is next in the pool, so the requested model is not
@@ -171,7 +189,7 @@ class Engine:
 
     # ---- transport ------------------------------------------------------
     def _call_once(self, system: str, user: str) -> tuple[str, Usage]:
-        kwargs = {
+        kwargs: Json = {
             "model": self.model,
             "max_tokens": self.max_tokens,
             "system": system,
@@ -185,14 +203,19 @@ class Engine:
         elif self.temperature is not None:
             kwargs["temperature"] = self.temperature
 
-        resp = self.client.messages.create(**kwargs)
+        if self.client is None:
+            msg = "this Engine was built with fake=True and has no client to call"
+            raise RuntimeError(msg)
+        # The optional arguments (thinking, temperature) are assembled above,
+        # so the call goes through **kwargs and the SDK's overloads cannot see
+        # what it returns. It returns a Message.
+        resp = cast("Message", self.client.messages.create(**kwargs))
         served = getattr(resp, "model", None)
         self._local.served = served
         if served:
             with self._served_lock:
                 self.served_models.add(served)
-        text = "".join(b.text for b in resp.content
-                       if getattr(b, "type", None) == "text")
+        text = "".join(b.text for b in resp.content if b.type == "text")
         return text, Usage(resp.usage.input_tokens, resp.usage.output_tokens)
 
     def call(self, system: str, user: str) -> tuple[str, Usage]:
@@ -226,7 +249,7 @@ class Engine:
         return getattr(self._local, "served", None)
 
     # ---- scanning -------------------------------------------------------
-    def scan_chunk(self, chunk: Chunk, lens_id: str) -> tuple[list[dict], Usage]:
+    def scan_chunk(self, chunk: Chunk, lens_id: str) -> tuple[list[Finding], Usage]:
         lens = LENSES[lens_id]
         chunk_note = ""
         context_note = "\n"
@@ -267,7 +290,7 @@ class Engine:
         return _clean_findings(obj, lens_id, chunk.start_line, chunk.end_line), usage
 
     # ---- verification ---------------------------------------------------
-    def verify(self, finding: dict, code: str) -> tuple[dict, Usage]:
+    def verify(self, finding: Finding, code: str) -> tuple[Finding, Usage]:
         user = VERIFY_TEMPLATE.format(
             path=finding["rel"], start_line=finding["start_line"],
             end_line=finding["end_line"], category=finding["category"],
@@ -306,7 +329,7 @@ class Engine:
         lens_id = next((lid for lid in LENSES if LENSES[lid].title in user), "logic")
         cats = LENSES[lens_id].categories or (lens_id,)
 
-        findings = []
+        findings: list[Finding] = []
         for _ in range(rng.choice([0, 0, 1, 1, 2])):
             ln = rng.choice(nums)
             findings.append({
