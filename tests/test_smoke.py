@@ -14,13 +14,14 @@ import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import ClassVar
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from readthrough.cli import main  # noqa: E402
-from readthrough.discover import FileInfo  # noqa: E402
-from readthrough.store import Store  # noqa: E402
+from readthrough.cli import main  # noqa: E402 — imported after sys.path is pointed at the checkout
+from readthrough.discover import FileInfo  # noqa: E402 — imported after sys.path is pointed at the checkout
+from readthrough.store import Store  # noqa: E402 — imported after sys.path is pointed at the checkout
 
 SUBJECT = '''\
 import os
@@ -54,39 +55,38 @@ class FakeScan(unittest.TestCase):
                      "--out", str(self.out), *extra])
 
     def test_scan_writes_every_report(self):
-        self.assertEqual(self.scan(), 0)
+        assert self.scan() == 0
         for name in ("report.md", "findings.json", "coverage.json",
                      "findings.sarif", "scan.db"):
-            self.assertTrue((self.out / name).exists(), f"missing {name}")
+            assert (self.out / name).exists(), f"missing {name}"
 
     def test_coverage_accounts_for_every_file(self):
         self.scan()
         cov = json.loads((self.out / "findings.json").read_text())["coverage"]
-        self.assertEqual(cov["files_eligible"], 1)
-        self.assertEqual(cov["files_scanned"], 1)
-        self.assertEqual(cov["tasks_failed"], 0)
-        self.assertEqual(cov["tasks_done"], cov["tasks_total"])
+        assert cov["files_eligible"] == 1
+        assert cov["files_scanned"] == 1
+        assert cov["tasks_failed"] == 0
+        assert cov["tasks_done"] == cov["tasks_total"]
 
     def test_sarif_is_valid_json_with_a_run(self):
         self.scan()
         sarif = json.loads((self.out / "findings.sarif").read_text())
-        self.assertIn("runs", sarif)
-        self.assertTrue(sarif["runs"])
+        assert "runs" in sarif
+        assert sarif["runs"]
 
     def test_rerun_resumes_instead_of_repeating(self):
         self.scan()
         first = json.loads((self.out / "findings.json").read_text())
         self.scan()  # same content hashes -> every pass already cached
         second = json.loads((self.out / "findings.json").read_text())
-        self.assertEqual(first["usage"]["input_tokens"],
-                         second["usage"]["input_tokens"])
+        assert first["usage"]["input_tokens"] == second["usage"]["input_tokens"]
 
     def test_unknown_lens_is_rejected_before_spending_anything(self):
-        self.assertEqual(self.scan("--lenses", "nonsense"), 2)
+        assert self.scan("--lenses", "nonsense") == 2
 
     def test_estimate_only_writes_no_reports(self):
-        self.assertEqual(self.scan("--estimate-only"), 0)
-        self.assertFalse((self.out / "findings.json").exists())
+        assert self.scan("--estimate-only") == 0
+        assert not (self.out / "findings.json").exists()
 
 
 class StaleFindings(unittest.TestCase):
@@ -119,27 +119,25 @@ class StaleFindings(unittest.TestCase):
             attempts=1, error=None, in_tokens=1, out_tokens=1, duration_ms=1,
             served_model="test-model", findings=findings)
 
-    FINDING = [{"title": "Command injection", "explanation": "x" * 20,
+    FINDING: ClassVar[list[dict]] = [{"title": "Command injection", "explanation": "x" * 20,
                 "category": "injection", "severity": "high",
                 "confidence": "high", "start_line": 3, "end_line": 4}]
 
     def test_finding_against_superseded_content_is_not_reported(self):
         self._upsert("AAA")
         self._record("AAA", self.FINDING)
-        self.assertEqual(len(self.store.raw_findings()), 1)
+        assert len(self.store.raw_findings()) == 1
 
         self._upsert("BBB")  # the file was edited
-        self.assertEqual(self.store.raw_findings(), [],
-                         "a finding about content that no longer exists was reported")
+        assert self.store.raw_findings() == [], "a finding about content that no longer exists was reported"
 
     def test_superseded_passes_do_not_count_as_coverage(self):
         self._upsert("AAA")
         self._record("AAA", [])
-        self.assertEqual(len(self.store.tasks()), 1)
+        assert len(self.store.tasks()) == 1
 
         self._upsert("BBB")
-        self.assertEqual(self.store.tasks(), [],
-                         "an edited file still counted as scanned")
+        assert self.store.tasks() == [], "an edited file still counted as scanned"
 
     def test_rescanning_the_new_content_reports_normally(self):
         self._upsert("AAA")
@@ -147,8 +145,8 @@ class StaleFindings(unittest.TestCase):
         self._upsert("BBB")
         self._record("BBB", self.FINDING)
         rows = self.store.raw_findings()
-        self.assertEqual(len(rows), 1, "expected exactly the new content's finding")
-        self.assertEqual(rows[0]["sha256"], "BBB")
+        assert len(rows) == 1, "expected exactly the new content's finding"
+        assert rows[0]["sha256"] == "BBB"
 
 
 if __name__ == "__main__":
