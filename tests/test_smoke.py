@@ -153,3 +153,18 @@ class StaleFindings(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+def test_verify_records_a_verdict(tmp_path: Path) -> None:
+    """The verify path writes through Store.set_verdict.
+
+    Its token counts are keyword-only, and every other caller of set_verdict is
+    a test that passes them by name -- so a positional call in cli.py was a
+    TypeError nothing exercised.
+    """
+    store = Store(tmp_path / "scan.db")
+    store.set_verdict("fp1", "confirmed", "looks real", "high", in_tokens=1, out_tokens=2)
+    verdicts = store.verdicts()
+    assert verdicts["fp1"]["verdict"] == "confirmed"
+    assert verdicts["fp1"]["in_tokens"] == 1
+    store.close()
