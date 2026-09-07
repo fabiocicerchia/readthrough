@@ -30,6 +30,10 @@ jobs:
     permissions:
       contents: read
       security-events: write # upload SARIF
+    # Hoisted from the Audit step so the steps below can ask whether the key
+    # exists. A job-level `if:` cannot read the env context; a step-level one can.
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -74,10 +78,16 @@ jobs:
             cp "$f" "/tmp/subject/$f"
           done < /tmp/changed.txt
 
+      # The reviewer is a paid API call. With no key it exits 2 and reds every
+      # pull request that touches a file, which says nothing about the change.
+      - name: No API key — skipping the audit
+        if: steps.changed.outputs.count != '0' && env.ANTHROPIC_API_KEY == ''
+        run: |
+          echo "ANTHROPIC_API_KEY is not set on this repository, so the audit" \
+            "did not run. Set the secret to enable it." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Audit
-        if: steps.changed.outputs.count != '0'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        if: steps.changed.outputs.count != '0' && env.ANTHROPIC_API_KEY != ''
         run: |
           readthrough scan /tmp/subject \
             --out /tmp/report \
@@ -89,14 +99,14 @@ jobs:
       # it the upload fails and takes the whole job down after the scan has
       # already been paid for. The job summary below carries the same findings.
       - name: Upload SARIF
-        if: steps.changed.outputs.count != '0' && !github.event.repository.private
+        if: steps.changed.outputs.count != '0' && !github.event.repository.private && env.ANTHROPIC_API_KEY != ''
         uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3  # v4.37.6
         with:
           sarif_file: /tmp/report/findings.sarif
           category: readthrough
 
       - name: Job summary
-        if: always() && steps.changed.outputs.count != '0'
+        if: always() && steps.changed.outputs.count != '0' && env.ANTHROPIC_API_KEY != ''
         run: cat /tmp/report/report.md >> "$GITHUB_STEP_SUMMARY"
 
       # Advisory by default. To block merges on critical findings, uncomment:
