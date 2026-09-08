@@ -315,7 +315,6 @@ class Engine:
         """Deterministic stub. Exercises the full pipeline for free."""
         seed = int(hashlib.sha256(user.encode()).hexdigest()[:8], 16)
         rng = random.Random(seed)  # noqa: S311 — reproducible sampling, not a secret
-        time.sleep(0.01)
 
         if "Claimed finding" in user:
             v = rng.choice(["confirmed", "confirmed", "rejected", "uncertain"])

@@ -31,7 +31,7 @@ import sqlite3
 
 def lookup(conn, user_id):
     """Deliberately awful, so a lens has something to find."""
-    q = "SELECT * FROM users WHERE id = '%s'" % user_id
+    q = "SELECT id, email FROM users WHERE id = '%s'" % user_id
     return conn.execute(q).fetchall()
 
 
