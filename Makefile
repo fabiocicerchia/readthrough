@@ -1,7 +1,7 @@
 IMAGE ?= readthrough
 TAG   ?= dev
 
-.PHONY: help setup lint test build dist install uninstall docs selfscan clean
+.PHONY: help setup lint test build dist install uninstall docs selfscan clean run format analyze
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -48,3 +48,12 @@ clean: ## Remove build, cache and scan output
 	rm -rf build/ dist/ *.egg-info/ .ruff_cache/ .pytest_cache/ site/
 	rm -rf readthrough-reports/
 	find . -name __pycache__ -type d -prune -exec rm -rf {} +
+
+run: ## Run readthrough
+	readthrough --help
+
+format: ## Rewrite the sources to canonical form
+	ruff format .
+
+analyze: ## Type-check the package
+	basedpyright
