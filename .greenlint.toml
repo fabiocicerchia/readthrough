@@ -1,0 +1,18 @@
+# greenlint config — see https://github.com/fabiocicerchia/greenlint
+#
+# Nothing is disabled globally: a rule switched off everywhere stops being a
+# signal anywhere. The one entry below is a file whose finding is not a defect.
+
+ignore = [
+  # GL004 (full git history clone) is correct about what this workflow does and
+  # wrong about whether it should. mkdocs' git-revision-date-localized plugin
+  # derives every page's "last updated" date from that file's commits, so the
+  # history *is* the build input — a shallow clone does not build the site, it
+  # builds a site with no dates. The checkout already carries that reasoning as
+  # a comment.
+  #
+  # Whole-file, because greenlint has no per-path rule scoping and no inline
+  # suppression. That is broader than it should be: a cron or an unpinned image
+  # added to this file later would go unflagged.
+  ".github/workflows/docs.yml",
+]
