@@ -37,3 +37,31 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 # Explicit, so auto-discovery does not try to package tests/ alongside it.
 packages = ["readthrough"]
+
+# ---------------------------------------------------------------- Ruff (FC-PY-001)
+[tool.ruff]
+line-length = 120           # FC-GEN-045
+# target-version is deliberately absent: ruff reads `requires-python`
+# above, so the supported floor is stated once. Pinning a second,
+# higher value here let UP017 rewrite `timezone.utc` to `UTC`, which
+# does not exist before 3.11.
+
+[tool.ruff.lint]
+select = [
+  "E", "W", "F", "I", "N", "UP", "ANN", "ASYNC", "S", "B", "A", "C4", "DTZ",
+  "T20", "PT", "RET", "SIM", "PTH", "ERA", "TD", "FIX", "PLR2004", "TRY", "PL", "RUF",
+]
+ignore = [
+  "ANN401",      # Any in *args/**kwargs — FC-GEN-016's comment rule covers it
+  "TRY003",      # long messages inline; FC-GEN-022 wants them descriptive
+]
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
+
+[tool.ruff.lint.per-file-ignores]
+# assert is the point, and a magic number in a fixture is the fixture.
+"tests/**" = ["S101", "ANN", "PLR2004"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
