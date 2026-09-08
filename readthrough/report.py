@@ -7,7 +7,7 @@ without that is unfalsifiable -- you cannot tell "clean" from "never looked".
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from .store import Store
@@ -16,6 +16,8 @@ import json
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
+
+from readthrough.types import Json, Results
 
 from .merge import merge_findings, priority_score
 
@@ -27,7 +29,7 @@ SEV_LABEL = {"critical": "CRITICAL", "high": "HIGH",
 MAX_UNCOVERED_LISTED = 60
 
 
-def build_results(store: Store) -> dict:
+def build_results(store: Store) -> Results:
     files = [dict(r) for r in store.files()]
     tasks = [dict(r) for r in store.tasks()]
     merged = merge_findings(store.raw_findings())
@@ -97,7 +99,7 @@ def _pct(n: float, d: float) -> str:
 
 
 def render_markdown(  # noqa: PLR0912,PLR0915 — one section per report block, in order
-res: dict, max_detail: int = 250) -> str:
+res: Results, max_detail: int = 250) -> str:
     m, cov, use = res["meta"], res["coverage"], res["usage"]
     findings = res["findings"]
     active = [f for f in findings if f.get("verdict") != "rejected"]
@@ -106,8 +108,10 @@ res: dict, max_detail: int = 250) -> str:
     sev_counts = Counter(f["severity"] for f in active)
     # Every model that produced a finding in this scan.db, across all runs that
     # built it. When there is more than one, each finding names its own.
-    all_models = sorted({mo for f in findings for mo in (f.get("models") or [])})
-    out = []
+    all_models = sorted({
+        str(mo) for f in findings for mo in cast("list[str]", f.get("models") or [])
+    })
+    out: list[str] = []
     add = out.append
 
     add(f"# Code audit: `{m['root']}`")
@@ -252,7 +256,7 @@ res: dict, max_detail: int = 250) -> str:
                   + " — this range is worth reading in full rather than "
                     "patching one line.")
                 add("")
-            models = f.get("models") or []
+            models = cast("list[str]", f.get("models") or [])
             model_note = (f"model: {', '.join(models)} · "
                           if len(all_models) > 1 and models else "")
             add(f"<sub>found by: {', '.join(f['lenses'])} · {model_note}"
@@ -318,7 +322,7 @@ res: dict, max_detail: int = 250) -> str:
     return "\n".join(out)
 
 
-def write_reports(res: dict, outdir: Path) -> dict:
+def write_reports(res: Results, outdir: Path) -> dict[str, Path]:
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     md = outdir / "report.md"
@@ -333,12 +337,13 @@ def write_reports(res: dict, outdir: Path) -> dict:
     return {"markdown": md, "json": js, "coverage": cv, "sarif": sr}
 
 
-def to_sarif(res: dict) -> dict:
+def to_sarif(res: Results) -> Json:
     """SARIF 2.1.0 so findings can be uploaded to GitHub code scanning."""
     level = {"critical": "error", "high": "error",
              "medium": "warning", "low": "note"}
-    rules, seen = [], set()
-    results = []
+    rules: list[Json] = []
+    seen: set[str] = set()
+    results: list[Json] = []
     for f in res["findings"]:
         if f.get("verdict") == "rejected":
             continue

@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from types import FrameType
 
+    from .discover import Chunk, FileInfo
+    from .engine import Usage
     from .store import Store
 
 import argparse
@@ -19,6 +21,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
+
+from readthrough.types import Finding, Json, Results
 
 from . import console
 from .discover import chunk_file, discover_files, read_span
@@ -130,8 +134,10 @@ def cmd_scan(args: argparse.Namespace) -> int:  # noqa: PLR0912,PLR0915 — the 
         console.out(f"  --limit: reviewing the {len(eligible)} largest")
 
     # Build the task list, dropping anything already completed.
-    completed = set() if args.force else store.completed_keys()
-    tasks = []
+    completed: set[str] = set() if args.force else store.completed_keys()
+    # (task key, file, chunk, lens id, repeat index) -- the unit of work the
+    # pool below takes, and what a resumed run skips by key.
+    tasks: list[tuple[str, FileInfo, Chunk, str, int]] = []
     total_planned = 0
     for info in eligible:
         for chunk in chunk_file(info, args.chunk_lines, args.overlap):
@@ -166,13 +172,15 @@ def cmd_scan(args: argparse.Namespace) -> int:  # noqa: PLR0912,PLR0915 — the 
         _install_sigint()
         prog = Progress(len(tasks), quiet=args.quiet)
 
-        def run(t: tuple) -> None:
+        def run(t: tuple[str, FileInfo, Chunk, str, int]) -> str | None:
             key, info, chunk, lens, rep = t
             if _stop.is_set():
                 return None
             t0 = time.time()
             attempts = store.prior_attempts(key) + 1
-            err, findings, usage = None, [], None
+            err: str | None = None
+            findings: list[Finding] = []
+            usage: Usage | None = None
             try:
                 findings, usage = engine.scan_chunk(chunk, lens)
                 status = "done"
@@ -203,7 +211,9 @@ def cmd_scan(args: argparse.Namespace) -> int:  # noqa: PLR0912,PLR0915 — the 
         # resumed runs so a report built from an old scan.db keeps naming
         # every model that contributed to it.
         if engine.served_models:
-            prior = set(store.get_meta("served_models", []))
+            # get_meta returns whatever JSON was stored; this key holds a list
+            # of model names, and a store that has never seen one holds [].
+            prior = set(cast("list[str]", store.get_meta("served_models", [])))
             store.set_meta("served_models",
                            sorted(prior | engine.served_models))
 
@@ -235,7 +245,7 @@ def _verify(store: Store, args: argparse.Namespace, lens_ids: list[str]) -> None
     engine = Engine(args.model, max_tokens=2000, fake=args.fake)
     prog = Progress(len(todo), quiet=args.quiet)
 
-    def check(f: dict) -> None:
+    def check(f: Finding) -> None:
         if _stop.is_set():
             return
         code = read_span(store.abspath(f["rel"]), f["start_line"], f["end_line"])
@@ -262,7 +272,7 @@ def _verify(store: Store, args: argparse.Namespace, lens_ids: list[str]) -> None
     prog.finish()
 
 
-def _summarise(res: dict, paths: dict) -> None:
+def _summarise(res: Results, paths: dict[str, Path]) -> None:
     cov = res["coverage"]
     active = [f for f in res["findings"] if f.get("verdict") != "rejected"]
     sev = {s: sum(1 for f in active if f["severity"] == s)
@@ -310,7 +320,7 @@ def cmd_multi(args: argparse.Namespace) -> int:
 
     outroot = Path(args.out)
     outroot.mkdir(parents=True, exist_ok=True)
-    rollup = []
+    rollup: list[Json] = []
 
     for i, repo in enumerate(repos, 1):
         console.out(f"\n=== [{i}/{len(repos)}] {repo.name} " + "=" * 30)
