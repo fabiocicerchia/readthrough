@@ -93,13 +93,13 @@ line.
 
 Written to the output directory:
 
-| File | Purpose |
-|---|---|
-| `report.md` | Human-readable: coverage first, then findings by priority |
-| `findings.json` | Everything, for scripting |
-| `coverage.json` | What was scanned, skipped, and failed |
-| `findings.sarif` | Upload to GitHub code scanning |
-| `scan.db` | Resumable state — keep it, delete it to start fresh |
+| File             | Purpose                                                   |
+| ---------------- | --------------------------------------------------------- |
+| `report.md`      | Human-readable: coverage first, then findings by priority |
+| `findings.json`  | Everything, for scripting                                 |
+| `coverage.json`  | What was scanned, skipped, and failed                     |
+| `findings.sarif` | Upload to GitHub code scanning                            |
+| `scan.db`        | Resumable state — keep it, delete it to start fresh       |
 
 `multi` additionally writes `rollup.md` and `rollup.json` ranking every repo.
 

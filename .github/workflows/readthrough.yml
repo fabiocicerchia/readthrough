@@ -100,7 +100,7 @@ jobs:
       # already been paid for. The job summary below carries the same findings.
       - name: Upload SARIF
         if: steps.changed.outputs.count != '0' && !github.event.repository.private && env.ANTHROPIC_API_KEY != ''
-        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3  # v4.37.6
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938  # v4.37.9
         with:
           sarif_file: /tmp/report/findings.sarif
           category: readthrough

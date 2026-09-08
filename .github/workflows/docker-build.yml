@@ -42,7 +42,7 @@ jobs:
 
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e  # v4.3.0
 
-      - uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051  # v5.10.0
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302  # v6.2.0
         id: meta
         with:
           images: ghcr.io/fabiocicerchia/readthrough
@@ -52,7 +52,7 @@ jobs:
             type=sha
 
       # A PR build proves the image compiles without publishing anything.
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f  # v4.6.0
         if: env.PUBLISH == 'true'
         with:
           registry: ghcr.io
