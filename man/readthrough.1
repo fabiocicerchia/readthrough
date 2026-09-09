@@ -1,0 +1,133 @@
+.TH READTHROUGH 1 "2026-09" "readthrough" "User Commands"
+.SH NAME
+readthrough \- multi-pass LLM code audit with resumable state and coverage accounting
+.SH SYNOPSIS
+.B readthrough
+.I command
+.RI [ options ]
+.SH DESCRIPTION
+Reads a codebase through several independent lenses, merges what they find,
+and accounts explicitly for what was and was not covered \(em so the result
+is an audit with a known scope rather than an impression.
+.PP
+State is kept in a scan database, so an interrupted run resumes instead of
+starting again, and reports can be rebuilt without re-reading anything.
+.SH COMMANDS
+.TP
+.BI scan " PATH"
+Scan one repository.
+.TP
+.BI multi " LIST"
+Scan many: a file of paths, or a directory of repositories.
+.TP
+.BI report " DIR"
+Rebuild reports from an existing
+.IR scan.db .
+.TP
+.B lenses
+List the available lenses.
+.SH OPTIONS
+.SS Scope
+.TP
+.BI \-o " DIR" ", " \-\-out " DIR"
+Output directory.
+.TP
+.BI \-\-ext " LIST"
+Restrict to these extensions, e.g.
+.BR py,ts .
+.TP
+.BI \-\-exclude " GLOB"
+Glob to exclude. Repeatable.
+.TP
+.BI \-\-limit " N"
+Only the N largest eligible files.
+.TP
+.BI \-\-min\-loc " N"
+Skip files smaller than this (default 3).
+.TP
+.BI \-\-max\-file\-bytes " N"
+Skip files larger than this (default 400000).
+.SS Passes
+.TP
+.BI \-\-lenses " LIST"
+Comma-separated lenses to run; see
+.BR "readthrough lenses" .
+.TP
+.BI \-\-repeat " N"
+Identical repeats per lens, to counter sampling variance (default 1).
+.TP
+.B \-\-verify
+Second-opinion pass over the merged findings.
+.TP
+.BI \-\-verify\-min\-severity " LEVEL"
+.BR critical ,
+.BR high ,
+.B medium
+or
+.B low
+(default high).
+.TP
+.B \-\-force
+Ignore cached results and redo every pass.
+.SS Model and throughput
+.TP
+.BI \-\-model " MODEL"
+Model to use.
+.TP
+.BI \-j " N" ", " \-\-workers " N"
+Concurrent workers (default 6).
+.TP
+.BI \-\-chunk\-lines " N"
+Lines per chunk (default 350).
+.TP
+.BI \-\-overlap " N"
+Overlap between chunks, in lines (default 60).
+.TP
+.BI \-\-max\-tokens " N"
+Output token ceiling per request (default 8000).
+.TP
+.BI \-\-thinking " BUDGET"
+Enable extended thinking with this token budget.
+.TP
+.BI \-\-temperature " T"
+Sampling temperature.
+.SS Dry runs
+.TP
+.B \-\-fake
+Offline stub: exercises the pipeline for free.
+.TP
+.B \-\-estimate\-only
+Report what the run would cost, and stop.
+.TP
+.BR \-q ", " \-\-quiet
+Less output.
+.SH EXIT STATUS
+.TP
+.B 0
+The scan completed.
+.TP
+.B non-zero
+The scan could not be run or resumed.
+.SH EXAMPLES
+.PP
+Audit a repository:
+.PP
+.RS
+.B readthrough scan . \-o audit/
+.RE
+.PP
+Price it first:
+.PP
+.RS
+.B readthrough scan . \-\-estimate\-only
+.RE
+.PP
+Rebuild the reports later:
+.PP
+.RS
+.B readthrough report audit/
+.RE
+.SH SEE ALSO
+.BR gradebook-code (1).
+Project documentation:
+https://github.com/fabiocicerchia/readthrough

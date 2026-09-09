@@ -22,6 +22,8 @@ FROM python:3.13-slim@sha256:27f90d79cc85e9b7b2560063ef44fa0e9eaae7a7c3f5a9f7456
 WORKDIR /src
 COPY pyproject.toml README.md LICENSE ./
 COPY readthrough ./readthrough
+# The wheel carries the man page as a data-file, so the build needs it here.
+COPY man ./man
 
 RUN python -m pip install --no-cache-dir --upgrade pip build \
     && python -m build --wheel --outdir /dist
