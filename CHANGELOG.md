@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Releases are cut by release-please from Conventional Commit messages — don't
 edit the released sections by hand.
 
+## [1.1.0](https://github.com/fabiocicerchia/readthrough/compare/v1.0.1...v1.1.0) (2026-09-08)
+
+
+### Features
+
+* add the eight-verb repo contract ([#15](https://github.com/fabiocicerchia/readthrough/issues/15)) ([282375a](https://github.com/fabiocicerchia/readthrough/commit/282375a32b76c68ac9ddabe54acff7809a2dff07))
+
+
+### Bug Fixes
+
+* clear the greenlint and shebang findings that keep lint red ([#16](https://github.com/fabiocicerchia/readthrough/issues/16)) ([364bb24](https://github.com/fabiocicerchia/readthrough/commit/364bb241f85c0a8de14be746faa0bf6d8941a32f))
+
 ## [1.0.1](https://github.com/fabiocicerchia/readthrough/compare/v1.0.0...v1.0.1) (2026-09-04)
 
 
