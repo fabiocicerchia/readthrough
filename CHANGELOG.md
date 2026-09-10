@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Releases are cut by release-please from Conventional Commit messages — don't
 edit the released sections by hand.
 
+## [1.1.1](https://github.com/fabiocicerchia/readthrough/compare/v1.1.0...v1.1.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* **engine:** adaptive thinking and effort, not a token budget ([#30](https://github.com/fabiocicerchia/readthrough/issues/30)) ([71f1f3f](https://github.com/fabiocicerchia/readthrough/commit/71f1f3f05a4947d696349aebab594b47d7fb4eac))
+
 ## [1.1.0](https://github.com/fabiocicerchia/readthrough/compare/v1.0.1...v1.1.0) (2026-09-08)
 
 
