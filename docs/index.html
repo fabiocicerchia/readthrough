@@ -44,7 +44,11 @@ footer{margin-top:2.2rem;color:#5c6684;font-size:.82rem}
 <div class="card">
   <h1>🔎 readthrough</h1>
   <p class="tagline">Multi-pass LLM code audit with resumable state and explicit coverage accounting.</p>
-  <p class="desc">Runs several independent, narrowly focused passes over every source file instead of one general “find bugs” prompt, then merges the results. Every file gets a recorded status and every failed pass is reported, so a clean report and an empty report are distinguishable.</p>
+  <p class="desc">
+    Runs several independent, narrowly focused passes over every source file instead of one general “find bugs” prompt,
+    then merges the results. Every file gets a recorded status and every failed pass is reported, so a clean report and
+    an empty report are distinguishable.
+  </p>
   <div class="install-label">Install</div>
   <pre><code>curl -fsSL https://raw.githubusercontent.com/fabiocicerchia/readthrough/main/install.sh | sh</code></pre>
   <p class="alt">or: <code>pipx install git+https://github.com/fabiocicerchia/readthrough.git</code></p>
