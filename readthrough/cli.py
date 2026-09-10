@@ -26,7 +26,7 @@ from readthrough.types import Finding, Json, Results
 
 from . import console
 from .discover import chunk_file, discover_files, read_span
-from .engine import Engine, PermanentError
+from .engine import EFFORT_LEVELS, Engine, PermanentError
 from .lenses import DEFAULT_LENSES, LENSES
 from .merge import merge_findings, priority_score
 from .report import build_results, render_markdown, write_reports
@@ -167,8 +167,7 @@ def cmd_scan(args: argparse.Namespace) -> int:  # noqa: PLR0912,PLR0915 — the 
             return 0
 
         engine = Engine(args.model, max_tokens=args.max_tokens,
-                        thinking_budget=args.thinking, fake=args.fake,
-                        temperature=args.temperature)
+                        effort=args.thinking, fake=args.fake)
         _install_sigint()
         prog = Progress(len(tasks), quiet=args.quiet)
 
@@ -415,10 +414,13 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--chunk-lines", type=int, default=350)
         sp.add_argument("--overlap", type=int, default=60)
         sp.add_argument("--max-tokens", type=int, default=8000)
-        sp.add_argument("--thinking", type=int, default=None,
-                        metavar="BUDGET",
-                        help="enable extended thinking with this token budget")
-        sp.add_argument("--temperature", type=float, default=None)
+        # An effort level, not a token budget: the fixed thinking budget was
+        # removed from the API and now returns a 400. --temperature is gone
+        # for the same reason — the current models reject it outright.
+        sp.add_argument("--thinking", choices=EFFORT_LEVELS, default=None,
+                        metavar="LEVEL",
+                        help="think before answering, at this effort level "
+                             f"({', '.join(EFFORT_LEVELS)})")
         sp.add_argument("--max-file-bytes", type=int, default=400_000)
         sp.add_argument("--min-loc", type=int, default=3)
         sp.add_argument("--ext", help="restrict to these extensions, e.g. py,ts")

@@ -35,6 +35,14 @@ from .lenses import CONFIDENCES, LENSES, SEVERITIES, SYSTEM_PROMPT, USER_TEMPLAT
 MAX_ATTEMPTS = 5
 BASE_BACKOFF = 2.0
 
+# Thinking depth, lowest to highest. The fixed token budget these replaced
+# was removed from the API; asking for one now returns a 400.
+EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")
+
+# Floor for max_tokens once thinking is on, because the ceiling covers the
+# thinking and the reply together.
+THINKING_MAX_TOKENS = 16000
+
 RETRYABLE_STATUS = {408, 409, 429, 500, 502, 503, 504, 529}
 
 
@@ -164,13 +172,11 @@ def _clean_findings(obj: Json, lens_id: str, lo: int, hi: int) -> list[Finding]:
 
 class Engine:
     def __init__(self, model: str, max_tokens: int = 8000,
-                 thinking_budget: int | None = None, fake: bool = False,
-                 temperature: float | None = None):
+                 effort: str | None = None, fake: bool = False):
         self.model = model
         self.max_tokens = max_tokens
-        self.thinking_budget = thinking_budget
+        self.effort = effort
         self.fake = fake
-        self.temperature = temperature
         # None on a fake run; _call_once refuses to run without it.
         self.client: Anthropic | None = None
         # Every distinct model that actually served a response. Behind a proxy
@@ -195,18 +201,21 @@ class Engine:
             "system": system,
             "messages": [{"role": "user", "content": user}],
         }
-        if self.thinking_budget:
-            kwargs["thinking"] = {"type": "enabled",
-                                  "budget_tokens": self.thinking_budget}
-            kwargs["max_tokens"] = max(self.max_tokens,
-                                       self.thinking_budget + 4000)
-        elif self.temperature is not None:
-            kwargs["temperature"] = self.temperature
+        if self.effort:
+            # Adaptive thinking with an effort level, not a token budget: the
+            # current models reject `thinking: {"type": "enabled",
+            # "budget_tokens": N}` with a 400, and reject temperature/top_p/
+            # top_k outright. Depth is an effort level now; style is prompting.
+            kwargs["thinking"] = {"type": "adaptive"}
+            kwargs["output_config"] = {"effort": self.effort}
+            # max_tokens caps thinking *plus* the reply, so a ceiling sized for
+            # the answer alone truncates mid-response once the model thinks.
+            kwargs["max_tokens"] = max(self.max_tokens, THINKING_MAX_TOKENS)
 
         if self.client is None:
             msg = "this Engine was built with fake=True and has no client to call"
             raise RuntimeError(msg)
-        # The optional arguments (thinking, temperature) are assembled above,
+        # The optional arguments (thinking, effort) are assembled above,
         # so the call goes through **kwargs and the SDK's overloads cannot see
         # what it returns. It returns a Message.
         resp = cast("Message", self.client.messages.create(**kwargs))

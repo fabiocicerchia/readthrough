@@ -47,7 +47,7 @@ first missed, but a first `secrets` pass surfaces a category no amount of
 
     ```sh
     readthrough scan ./payments \
-      --model claude-opus-5 --thinking 6000 \
+      --model claude-opus-5 --thinking high \
       --lenses injection,authz,secrets,logic,errors,concurrency,data \
       --repeat 2 --verify --out reports/payments
     ```
