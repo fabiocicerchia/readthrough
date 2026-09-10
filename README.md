@@ -73,7 +73,7 @@ readthrough scan ./my-repo --out reports/my-repo
 
 # Tier-1 repo: strongest model, extended thinking, all lenses, verification.
 readthrough scan ./payments \
-  --model claude-opus-5 --thinking 6000 \
+  --model claude-opus-5 --thinking high \
   --lenses injection,authz,secrets,logic,errors,concurrency,data \
   --repeat 2 --verify --out reports/payments
 

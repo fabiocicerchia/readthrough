@@ -49,9 +49,8 @@ its reason.
 | Flag | Default | Effect |
 | --- | --- | --- |
 | `--model ID` | `$READTHROUGH_MODEL` or `claude-sonnet-5` | Model to call. |
-| `--thinking N` | off | Enable extended thinking with an N-token budget. |
+| `--thinking LEVEL` | off | Think before answering, at this effort level: `low`, `medium`, `high`, `xhigh`, `max`. Raises `--max-tokens` to 16000 if it is lower, because the ceiling covers the thinking and the reply together. |
 | `--max-tokens N` | `8000` | Output cap per pass. |
-| `--temperature F` | model default | Rarely worth changing. |
 
 ## Verification
 
