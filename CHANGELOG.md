@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Releases are cut by release-please from Conventional Commit messages — don't
 edit the released sections by hand.
 
+## [1.1.2](https://github.com/fabiocicerchia/readthrough/compare/v1.1.1...v1.1.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* **release:** let the release PR carry a token that isn't GITHUB_TOKEN ([#33](https://github.com/fabiocicerchia/readthrough/issues/33)) ([c1bb95e](https://github.com/fabiocicerchia/readthrough/commit/c1bb95e0170b3694b2dcc588f875c7641fd25f1b))
+
 ## [1.1.1](https://github.com/fabiocicerchia/readthrough/compare/v1.1.0...v1.1.1) (2026-09-10)
 
 
