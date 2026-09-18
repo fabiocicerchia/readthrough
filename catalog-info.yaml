@@ -1,0 +1,24 @@
+# Backstage catalog entry, read by paved's scorecard plugin.
+#
+# Every check paved scores is derived from this file alone — no cluster
+# access, no CI credentials. What is absent here is absent from the score.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: readthrough
+  description: >-
+      Multi-pass LLM code audit with resumable state and explicit coverage accounting — independent
+      focused lenses per file, overlapping windows, and every file accounted for, including the ones it
+      skipped.
+  annotations:
+    github.com/project-slug: fabiocicerchia/readthrough
+    backstage.io/source-location: url:https://github.com/fabiocicerchia/readthrough/
+    backstage.io/techdocs-ref: dir:.
+  links:
+    - url: https://github.com/fabiocicerchia/readthrough
+      title: Source
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/kodebeat
+  system: oss-tools
