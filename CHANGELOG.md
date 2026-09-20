@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Releases are cut by release-please from Conventional Commit messages — don't
 edit the released sections by hand.
 
+## [1.1.3](https://github.com/fabiocicerchia/readthrough/compare/v1.1.2...v1.1.3) (2026-09-20)
+
+
+### Bug Fixes
+
+* **ci:** keep actions: read on the job that uploads sarif ([#49](https://github.com/fabiocicerchia/readthrough/issues/49)) ([7db5a93](https://github.com/fabiocicerchia/readthrough/commit/7db5a9354136467c0a39e14ad556ed9a74ad5012))
+
 ## [1.1.2](https://github.com/fabiocicerchia/readthrough/compare/v1.1.1...v1.1.2) (2026-09-11)
 
 
