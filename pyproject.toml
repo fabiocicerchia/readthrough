@@ -16,10 +16,10 @@ classifiers = [
     "Topic :: Security",
     "Topic :: Software Development :: Quality Assurance",
 ]
-dependencies = ["anthropic>=0.40"]
+dependencies = ["anthropic>=1.8.0"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.16", "basedpyright>=1.31"]
+dev = ["pytest>=9.1.1", "ruff>=0.16.9", "basedpyright>=1.40.1"]
 
 [project.urls]
 Homepage = "https://fabiocicerchia.github.io/readthrough/"
@@ -31,7 +31,7 @@ Issues = "https://github.com/fabiocicerchia/readthrough/issues"
 readthrough = "readthrough.cli:main"
 
 [build-system]
-requires = ["setuptools>=77"]
+requires = ["setuptools>=84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
