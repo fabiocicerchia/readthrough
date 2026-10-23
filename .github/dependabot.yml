@@ -6,6 +6,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       # Everything else rides in one pull request rather than one each.
       actions:
@@ -15,6 +17,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
 
   # The pinned MkDocs toolchain (docs/requirements.txt) is hash-locked, so it
   # needs its own entry to move at all.
@@ -22,3 +26,5 @@ updates:
     directory: /docs
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
