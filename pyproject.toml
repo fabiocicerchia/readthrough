@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Security",
     "Topic :: Software Development :: Quality Assurance",
 ]
-dependencies = ["anthropic>=1.8.0"]
+dependencies = ["anthropic>=2.3.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=9.1.1", "ruff>=0.16.9", "basedpyright>=1.40.1"]
