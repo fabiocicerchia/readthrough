@@ -1,0 +1,317 @@
+{
+ "excluded": {
+  "stylesheets/extra": [
+   {
+    "candidate": "Translucent blurred header with hairline divider and shadow on scroll",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "docs/stylesheets/extra.css#.md-header"
+   },
+   {
+    "candidate": "Tab link opacity and active weight",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-tabs__link"
+   },
+   {
+    "candidate": "Heading weights, letter-spacing and kerning",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-typeset h1"
+   },
+   {
+    "candidate": "Rounded bordered code blocks",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-typeset .highlight"
+   },
+   {
+    "candidate": "Tables rendered as rounded cards with uppercase headers",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-typeset table:not([class])"
+   },
+   {
+    "candidate": "Dark-scheme stronger card hover shadow",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#[data-md-color-scheme=\"slate\"] .md-typeset .grid.cards > ul > li:hover"
+   },
+   {
+    "candidate": "Sidebar nav title and active link weights",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-nav__title"
+   },
+   {
+    "candidate": "Footer background, divider and muted link colour",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#.md-footer-meta"
+   },
+   {
+    "candidate": "Smooth scrolling to anchors",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "docs/stylesheets/extra.css#html"
+   },
+   {
+    "candidate": "Splash page loads the theme from the deployed /docs/ path",
+    "covered_by": "docs.theme.single-shared-palette",
+    "reason": "DUPLICATE_OF",
+    "source": "docs/index.html"
+   }
+  ]
+ },
+ "lifted": {
+  "stylesheets/extra": []
+ },
+ "retired": [],
+ "scenarios": {
+  "docs.documentation.docs-theme.001": {
+   "file": "docs/specs/documentation/docs-theme/docs-theme-branding.feature",
+   "fingerprint": "ac660254fd34",
+   "human": false,
+   "rule": "docs.theme.single-shared-palette",
+   "source": "docs/stylesheets/extra.css#:root",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.documentation.docs-theme.002": {
+   "file": "docs/specs/documentation/docs-theme/docs-theme-branding.feature",
+   "fingerprint": "5daeb3a86fd1",
+   "human": false,
+   "rule": "docs.theme.links-legible-per-scheme",
+   "source": "docs/stylesheets/extra.css#[data-md-color-scheme=\"slate\"]",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.documentation.docs-theme.003": {
+   "file": "docs/specs/documentation/docs-theme/docs-theme-branding.feature",
+   "fingerprint": "ac660254fd34",
+   "human": false,
+   "rule": "docs.theme.no-network-assets",
+   "source": "docs/stylesheets/extra.css#:root",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.documentation.docs-theme.004": {
+   "file": "docs/specs/documentation/docs-theme/docs-theme-branding.feature",
+   "fingerprint": "c702704e5aae",
+   "human": false,
+   "rule": "docs.theme.no-borrowed-logo",
+   "source": "docs/stylesheets/extra.css#.md-header__button.md-logo",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.documentation.docs-theme.005": {
+   "file": "docs/specs/documentation/docs-theme/docs-theme-branding.feature",
+   "fingerprint": "2ad0ed48ff62",
+   "human": false,
+   "rule": "docs.theme.home-hero-accent",
+   "source": "docs/stylesheets/extra.css#.md-typeset .hero h1",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "docs.documentation.docs-theme.006": {
+   "file": "docs/specs/documentation/docs-theme/docs-theme-branding.feature",
+   "fingerprint": "4413aef244b0",
+   "human": false,
+   "rule": "docs.theme.button-hover-glow",
+   "source": "docs/stylesheets/extra.css#.md-typeset .md-button:hover",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  }
+ },
+ "taxonomy": {
+  "domains": [
+   {
+    "areas": [
+     {
+      "description": "Walking a repository, applying include/exclude rules and recording a status for every file found.",
+      "slug": "file-discovery",
+      "title": "File discovery"
+     },
+     {
+      "description": "Splitting large files into reviewable pieces that fit a model's context.",
+      "slug": "chunking",
+      "title": "Chunking"
+     },
+     {
+      "description": "Choosing which paths, languages and file sizes a run covers.",
+      "slug": "scan-scope",
+      "title": "Scan scope"
+     }
+    ],
+    "description": "Finding which files to audit and preparing them for review.",
+    "slug": "scanning",
+    "title": "Codebase scanning"
+   },
+   {
+    "areas": [
+     {
+      "description": "The narrowly focused passes (e.g. security, correctness) each applied to every chunk.",
+      "slug": "lenses",
+      "title": "Review lenses"
+     },
+     {
+      "description": "Talking to the Anthropic API, including retries, rate limits and per-pass error recording.",
+      "slug": "model-calls",
+      "title": "Model calls"
+     },
+     {
+      "description": "Running the full pipeline free and offline with a fake model for evaluation and tests.",
+      "slug": "offline-mode",
+      "title": "Offline fake mode"
+     },
+     {
+      "description": "Running many passes at once through a worker pool.",
+      "slug": "concurrency",
+      "title": "Parallel workers"
+     }
+    ],
+    "description": "Running focused LLM passes over the code to produce findings.",
+    "slug": "review",
+    "title": "AI review"
+   },
+   {
+    "areas": [
+     {
+      "description": "Combining overlapping findings from different lenses and chunks into one.",
+      "slug": "merging",
+      "title": "Merging and deduplication"
+     },
+     {
+      "description": "Re-checking findings to filter false positives and grade confidence.",
+      "slug": "verification",
+      "title": "Verification"
+     },
+     {
+      "description": "Classifying and ordering findings by how much they matter.",
+      "slug": "severity",
+      "title": "Severity and ranking"
+     }
+    ],
+    "description": "Turning raw pass output into a trustworthy, deduplicated set of results.",
+    "slug": "findings",
+    "title": "Findings"
+   },
+   {
+    "areas": [
+     {
+      "description": "Rendering results as human-readable and machine-readable reports.",
+      "slug": "report-formats",
+      "title": "Report formats"
+     },
+     {
+      "description": "Showing what was scanned, skipped or failed so a clean report differs from an empty one.",
+      "slug": "coverage-accounting",
+      "title": "Coverage accounting"
+     },
+     {
+      "description": "Exit codes that reflect run success, never findings.",
+      "slug": "exit-status",
+      "title": "Exit status"
+     }
+    ],
+    "description": "Presenting audit results to people and machines.",
+    "slug": "reporting",
+    "title": "Reporting"
+   },
+   {
+    "areas": [
+     {
+      "description": "The single local state file recording every file, pass and result.",
+      "slug": "run-state",
+      "title": "Run state"
+     },
+     {
+      "description": "Picking up interrupted runs and skipping work already done.",
+      "slug": "resume",
+      "title": "Resume and re-runs"
+     },
+     {
+      "description": "Tracking tokens and spend across a run.",
+      "slug": "cost-tracking",
+      "title": "Cost and usage"
+     }
+    ],
+    "description": "Persisting progress so audits can be resumed, inspected and costed.",
+    "slug": "runs",
+    "title": "Runs and state"
+   },
+   {
+    "areas": [
+     {
+      "description": "The readthrough command, its subcommands and options.",
+      "slug": "commands",
+      "title": "Commands and flags"
+     },
+     {
+      "description": "Settings files, environment variables and the API key.",
+      "slug": "configuration",
+      "title": "Configuration"
+     }
+    ],
+    "description": "How users invoke and configure the tool.",
+    "slug": "cli",
+    "title": "Command line"
+   },
+   {
+    "areas": [
+     {
+      "description": "Getting-started, usage, configuration, architecture and FAQ pages.",
+      "slug": "docs-content",
+      "title": "Guides and reference"
+     },
+     {
+      "description": "Site styling: accent palette, light/dark schemes, typography, hero, feature cards, navigation and logo, with no network-loaded assets.",
+      "slug": "docs-theme",
+      "title": "Docs theme and branding"
+     },
+     {
+      "description": "The splash page sharing the docs palette.",
+      "slug": "landing-page",
+      "title": "Landing page"
+     }
+    ],
+    "description": "The published user documentation and its look and feel.",
+    "slug": "documentation",
+    "title": "Documentation site"
+   },
+   {
+    "areas": [
+     {
+      "description": "Wheel/sdist builds, install script, man page and versioning.",
+      "slug": "packaging",
+      "title": "Packaging and install"
+     },
+     {
+      "description": "Building and running readthrough in a container.",
+      "slug": "container",
+      "title": "Container image"
+     },
+     {
+      "description": "Pre-commit hooks, linting, tests, secret scanning and dependency updates.",
+      "slug": "ci-quality",
+      "title": "CI and quality gates"
+     },
+     {
+      "description": "Auditing this repository with itself.",
+      "slug": "self-audit",
+      "title": "Self-audit"
+     }
+    ],
+    "description": "Building, packaging, distributing and maintaining the project.",
+    "slug": "operations",
+    "title": "Operations and developer tooling"
+   }
+  ]
+ }
+}

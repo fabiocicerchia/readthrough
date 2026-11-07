@@ -1,0 +1,1734 @@
+{
+ "excluded": {
+  "examples/basic": [
+   {
+    "candidate": "Script aborts on the first failing command or unset variable (set -eu)",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "examples/basic/run.sh#run.sh"
+   },
+   {
+    "candidate": "make selfscan audits the repo offline into /tmp/readthrough-selfscan, without the tests/examples excludes",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#selfscan"
+   },
+   {
+    "candidate": "README follow-up commands (--estimate-only, real scan with ANTHROPIC_API_KEY)",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "examples/basic/README.md"
+   },
+   {
+    "candidate": "The self-scan example audits the repository offline and writes its reports to the chosen folder",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "examples/basic/run.sh#run.sh"
+   },
+   {
+    "candidate": "The self-scan example leaves only the top level of the tests and examples folders out of the audit",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "examples/basic/run.sh#run.sh"
+   },
+   {
+    "candidate": "The self-scan example shows the top of the report and where every output lives",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "examples/basic/run.sh#run.sh"
+   }
+  ],
+  "readthrough/cli": [
+   {
+    "candidate": "Task key format sha[:16]:lens:chunk:repeat",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/cli.py#task_key"
+   },
+   {
+    "candidate": "Scan metadata (root, model, lenses, repeats, verified, started_at) written to scan.db",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/cli.py#cmd_scan"
+   },
+   {
+    "candidate": "Served models accumulated across resumed runs",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/cli.py#cmd_scan"
+   },
+   {
+    "candidate": "Failed pass recorded with permanent/transient error text and attempt count",
+    "covered_by": "analysis/failure-handling (engine/store); user-visible effect covered by cli.scan.summary-shows-coverage-and-failures",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/cli.py#cmd_scan"
+   },
+   {
+    "candidate": "Worker pool size --workers/-j",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/cli.py#build_parser"
+   },
+   {
+    "candidate": "--model default from READTHROUGH_MODEL, else claude-sonnet-5",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/cli.py#build_parser"
+   },
+   {
+    "candidate": "Chunking, thinking, max-tokens, file-size, min-loc, ext and exclude flags passed through",
+    "covered_by": "behaviour belongs to discover/engine modules",
+    "reason": "TRIVIAL",
+    "source": "readthrough/cli.py#build_parser"
+   },
+   {
+    "candidate": "--repeat multiplies passes per lens",
+    "covered_by": "resume-and-repeat in other modules; pass count shown in 'N passes to run (L lenses x R repeat(s))'",
+    "reason": "TRIVIAL",
+    "source": "readthrough/cli.py#cmd_scan"
+   },
+   {
+    "candidate": "Files eligible/skipped/lines line printed after discovery",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/cli.py#cmd_scan"
+   },
+   {
+    "candidate": "Fleet rollup.json fields",
+    "covered_by": "cli.multi.rollup-ranks-by-risk",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/cli.py#cmd_multi"
+   },
+   {
+    "candidate": "python -m readthrough entry",
+    "covered_by": "command-line/entry-points (__main__ module)",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/cli.py#main"
+   },
+   {
+    "candidate": "KeyboardInterrupt before the signal handler is installed returns 130",
+    "covered_by": "cli.interrupt.first-ctrl-c-stops-gracefully",
+    "reason": "TRIVIAL",
+    "source": "readthrough/cli.py#main"
+   }
+  ],
+  "readthrough/console": [
+   {
+    "candidate": "All CLI printing routed through one module so bare print stays a lint signal (T20) and tests can patch one place",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/console.py#out"
+   },
+   {
+    "candidate": "console.out with no argument prints an empty line",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/console.py#out"
+   },
+   {
+    "candidate": "The specific wording of each scan, multi, report and lenses message",
+    "covered_by": "owned by the readthrough/cli module's command scenarios",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/cli.py#cmd_scan"
+   }
+  ],
+  "readthrough/discover": [
+   {
+    "candidate": "Content is hashed with SHA-256 so unchanged files are recognised on rerun",
+    "covered_by": "resume behaviour is observable in scan-runs/resume-and-repeat (cli/store)",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#_sha256_bytes"
+   },
+   {
+    "candidate": "Language classification table by file extension",
+    "covered_by": "intake.filtering.out-of-scope-files-omitted",
+    "reason": "TRIVIAL",
+    "source": "readthrough/discover.py#LANG_BY_EXT"
+   },
+   {
+    "candidate": "Binary detection heuristic (NUL byte, 85% printable in first 8 KiB)",
+    "covered_by": "intake.filtering.skip-reason-recorded",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#_is_probably_binary"
+   },
+   {
+    "candidate": "Duplicate paths from git output are processed once; results sorted by path",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#discover_files"
+   },
+   {
+    "candidate": "git listing times out after 60 seconds and falls back to a walk",
+    "covered_by": "intake.discovery.honours-gitignore",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#_git_tracked"
+   },
+   {
+    "candidate": "A file that becomes unreadable or empty after discovery yields no windows",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#chunk_file"
+   },
+   {
+    "candidate": "Numbered source around a finding, padded 25 lines, for the verification pass",
+    "covered_by": "findings/verification",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#read_span"
+   },
+   {
+    "candidate": "FileInfo and Chunk record shapes",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/discover.py#FileInfo"
+   }
+  ],
+  "readthrough/dockerfile": [
+   {
+    "candidate": "Two-stage build that compiles the wheel in a build stage so the runtime image needs no compiler",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#build"
+   },
+   {
+    "candidate": "Base image pinned by sha256 digest and bumped by dependabot",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#FROM"
+   },
+   {
+    "candidate": "Man page copied into the build context because the wheel ships it as a data file",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#build"
+   },
+   {
+    "candidate": "OCI labels for title, description, source URL and Apache-2.0 licence",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#LABEL"
+   },
+   {
+    "candidate": "PYTHONDONTWRITEBYTECODE and pip --no-cache-dir / wheel removal to keep the image small",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#ENV"
+   },
+   {
+    "candidate": "No HEALTHCHECK because the image is a batch command, not a service",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Dockerfile#ENTRYPOINT"
+   },
+   {
+    "candidate": "Re-running the container against the same output mount resumes instead of re-spending",
+    "covered_by": "scan-runs/resume-and-repeat (owned by the scan modules; the container adds nothing beyond a persistent /out)",
+    "reason": "DUPLICATE_OF",
+    "source": "Dockerfile#header"
+   },
+   {
+    "candidate": "ANTHROPIC_API_KEY passed through from the host environment with -e",
+    "covered_by": "command-line/commands-and-options (missing API key refusal belongs to the scan command)",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/cli.py#cmd_scan"
+   }
+  ],
+  "readthrough/engine": [
+   {
+    "candidate": "With a thinking effort set, adaptive thinking is requested and max_tokens is raised to at least 16000",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py#Engine._call_once"
+   },
+   {
+    "candidate": "Retry backoff delay (2s doubling plus jitter, capped at 60s)",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py#Engine.call"
+   },
+   {
+    "candidate": "SDK built-in retries disabled so the tool owns the retry policy",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py#Engine.__init__"
+   },
+   {
+    "candidate": "Prompt tells the model a multi-section file chunk is a section and to state assumptions",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py#Engine.scan_chunk"
+   },
+   {
+    "candidate": "Repair prompt includes at most the first 12000 characters of the bad reply",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py#Engine.scan_chunk"
+   },
+   {
+    "candidate": "Finding titles truncated to 200 characters; empty/null optional fields become absent",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/engine.py#_clean_findings"
+   },
+   {
+    "candidate": "Missing end line defaults to the start line; non-numeric lines drop the finding",
+    "covered_by": "analysis.response-parsing.findings-confined-to-shown-lines",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/engine.py#_clean_findings"
+   },
+   {
+    "candidate": "A fake engine refuses to make a real API call",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py#Engine._call_once"
+   },
+   {
+    "candidate": "Usage totals accumulate input and output tokens",
+    "covered_by": "analysis.failure-handling.unparseable-reply-repaired-once",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/engine.py#Usage"
+   },
+   {
+    "candidate": "Fake verification picks confirmed/rejected/uncertain with fixed weights",
+    "covered_by": "analysis.offline-mode.deterministic-free-run",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/engine.py#Engine._fake"
+   },
+   {
+    "candidate": "A permanent API error fails the pass at once, a transient one is retried before failing",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#Engine.call"
+   },
+   {
+    "candidate": "An unreadable model reply gets one repair attempt before the pass fails",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#Engine.scan_chunk"
+   },
+   {
+    "candidate": "The report names any model that answered other than the one requested",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#Engine._call_once"
+   },
+   {
+    "candidate": "A verification reply always results in confirmed, rejected or uncertain",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#Engine.verify"
+   },
+   {
+    "candidate": "The verifier's corrected severity replaces the original only when it is a known severity",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#Engine.verify"
+   },
+   {
+    "candidate": "A fake scan runs every pass without the network and produces the same findings each time",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#Engine._fake"
+   }
+  ],
+  "readthrough/install": [
+   {
+    "candidate": "READTHROUGH_REPO overrides the git repository the installer pulls from",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "install.sh"
+   },
+   {
+    "candidate": "set -eu aborts the installer on the first failing command (e.g. pipx or pip error)",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "install.sh"
+   },
+   {
+    "candidate": "have() helper probing commands with command -v",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "install.sh#have"
+   }
+  ],
+  "readthrough/lenses": [
+   {
+    "candidate": "Wording of each lens focus, the system prompt and the user prompt template",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/lenses.py#SYSTEM_PROMPT"
+   },
+   {
+    "candidate": "Verification prompt wording and the verdict JSON shape asked of the model",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/lenses.py#VERIFY_TEMPLATE"
+   },
+   {
+    "candidate": "Severity scale critical/high/medium/low and confidence scale high/medium/low, with unknown values coerced to medium",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/lenses.py#SEVERITIES"
+   },
+   {
+    "candidate": "Lens is an immutable record of id, title, focus and categories",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/lenses.py#Lens"
+   },
+   {
+    "candidate": "Fake mode picks categories from the lens it detects in the prompt by matching the lens title",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/engine.py"
+   },
+   {
+    "candidate": "Whitespace around comma-separated lens ids is ignored",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/cli.py#cmd_scan"
+   },
+   {
+    "candidate": "A finding's category is always one of its lens's categories",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/engine.py#parse_findings"
+   }
+  ],
+  "readthrough/makefile": [
+   {
+    "candidate": "make help lists every target with its description",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#help"
+   },
+   {
+    "candidate": "make setup does an editable install with dev extras and installs the pre-commit hook",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#setup"
+   },
+   {
+    "candidate": "make lint runs all pre-commit checks on the whole tree",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#lint"
+   },
+   {
+    "candidate": "make test runs pytest quietly",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#test"
+   },
+   {
+    "candidate": "make build builds the container image tagged IMAGE:TAG (default readthrough:dev)",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#build"
+   },
+   {
+    "candidate": "make dist builds wheel and sdist into dist/",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#dist"
+   },
+   {
+    "candidate": "make docs installs hash-pinned docs requirements and serves the site locally",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#docs"
+   },
+   {
+    "candidate": "make selfscan audits this repo with --fake into /tmp/readthrough-selfscan at no cost",
+    "covered_by": "the offline no-cost guarantee belongs to the --fake mode (analysis/offline-mode), not the make target",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#selfscan"
+   },
+   {
+    "candidate": "make clean deletes build, cache, docs site and readthrough-reports/ scan output",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#clean"
+   },
+   {
+    "candidate": "make run prints readthrough --help",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "Makefile#run"
+   },
+   {
+    "candidate": "make format rewrites sources with ruff format (contradicts CLAUDE.md, which says ruff-format is deliberately off and the tree is not ruff-formatted)",
+    "covered_by": "",
+    "reason": "TECH_DEVTOOLING",
+    "source": "Makefile#format"
+   },
+   {
+    "candidate": "make analyze type-checks the package with basedpyright",
+    "covered_by": "",
+    "reason": "TECH_BUILD",
+    "source": "Makefile#analyze"
+   }
+  ],
+  "readthrough/merge": [
+   {
+    "candidate": "merge_findings' own sort by severity then corroboration",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/merge.py#merge_findings"
+   },
+   {
+    "candidate": "Findings with missing line numbers sort as line 0 but crash proximity comparison",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/merge.py#merge_findings"
+   },
+   {
+    "candidate": "Merged finding lists models that produced it",
+    "covered_by": "reporting/markdown-report (per-finding model attribution is rendered by the report)",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/merge.py#_collapse"
+   },
+   {
+    "candidate": "Title and symbol taken from the most severe, most confident, longest-explained report",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/merge.py#_collapse"
+   },
+   {
+    "candidate": "Agreement bonus capped at 5 passes and corroboration bonus at 3 extra passes",
+    "covered_by": "findings.prioritisation.severity-adjusted-by-agreement-and-confidence",
+    "reason": "TRIVIAL",
+    "source": "readthrough/merge.py#priority_score"
+   },
+   {
+    "candidate": "Fingerprint truncated to 16 hex chars of SHA-1",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/merge.py#fingerprint"
+   }
+  ],
+  "readthrough/readthrough": [
+   {
+    "candidate": "Package version string __version__ = \"1.0.0\"",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/__init__.py#__version__"
+   },
+   {
+    "candidate": "Package docstring describing readthrough",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/__init__.py"
+   }
+  ],
+  "readthrough/report": [
+   {
+    "candidate": "Rebuilding reports from an existing scan database, to files or stdout",
+    "covered_by": "reporting/report-rebuild (CLI module owns it)",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/cli.py#cmd_report"
+   },
+   {
+    "candidate": "Findings ordered by priority score, then file, then line",
+    "covered_by": "findings/prioritisation (priority_score lives in merge)",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/report.py#build_results"
+   },
+   {
+    "candidate": "Verification verdict revising a finding's severity",
+    "covered_by": "findings/verification; its visible effect is folded into reporting.markdown.finding-detail-content",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/report.py#build_results"
+   },
+   {
+    "candidate": "Corroboration and co-located class notes on a finding",
+    "covered_by": "findings/corroboration",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/report.py#render_markdown"
+   },
+   {
+    "candidate": "Report header with root, model, lenses, repeats and verification flag",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/report.py#render_markdown"
+   },
+   {
+    "candidate": "Token totals row in the coverage table",
+    "covered_by": "scan-runs/cost-estimation",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/report.py#render_markdown"
+   },
+   {
+    "candidate": "Escaping pipes and newlines in appendix table cells, truncation lengths",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/report.py#render_markdown"
+   },
+   {
+    "candidate": "Percent helper returns n/a when nothing is eligible",
+    "covered_by": "",
+    "reason": "TRIVIAL",
+    "source": "readthrough/report.py#_pct"
+   },
+   {
+    "candidate": "Coverage counts only passes against the file's current content",
+    "covered_by": "scan-runs/resume-and-repeat (stale passes do not count as coverage)",
+    "reason": "DUPLICATE_OF",
+    "source": "readthrough/store.py#Store.tasks"
+   }
+  ],
+  "readthrough/store": [
+   {
+    "candidate": "Per-thread connections, write lock and WAL journal for concurrent workers",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/store.py#Store.conn"
+   },
+   {
+    "candidate": "Adding the served_model column to a scan state file from an older version",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/store.py#Store.__init__"
+   },
+   {
+    "candidate": "State file schema (meta, files, tasks, findings, verdicts)",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/store.py#SCHEMA"
+   },
+   {
+    "candidate": "Meta key/value storage as JSON",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/store.py#Store.set_meta"
+   },
+   {
+    "candidate": "File records upserted by relative path",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/store.py#Store.upsert_files"
+   },
+   {
+    "candidate": "Failed passes stored with their error rather than dropped",
+    "covered_by": "enforced by the scan command's pass runner and failure handling, not by the store",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/store.py#Store.record_task"
+   },
+   {
+    "candidate": "Attempt count incremented per retry of a pass",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/store.py#Store.prior_attempts"
+   },
+   {
+    "candidate": "Model that answered recorded per pass",
+    "covered_by": "surfaced to users by merge/report",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/store.py#Store.record_task"
+   },
+   {
+    "candidate": "Verdicts stored and overwritten per finding fingerprint",
+    "covered_by": "findings/verification",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/store.py#Store.set_verdict"
+   },
+   {
+    "candidate": "Closing all worker connections",
+    "covered_by": "",
+    "reason": "TECH_PERSISTENCE",
+    "source": "readthrough/store.py#Store.close"
+   },
+   {
+    "candidate": "Passes already completed for unchanged code are not run again",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/store.py#Store.completed_keys"
+   },
+   {
+    "candidate": "Findings about code that has since been edited are no longer reported",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/store.py#Store.raw_findings"
+   },
+   {
+    "candidate": "An edited file counts as unreviewed until its new content is scanned",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/store.py#Store.tasks"
+   },
+   {
+    "candidate": "Running a pass again replaces its earlier findings instead of adding to them",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/store.py#Store.record_task"
+   },
+   {
+    "candidate": "A pass cut off by an interruption is either kept whole or run again next time",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/store.py#Store.record_task"
+   },
+   {
+    "candidate": "Reported token usage includes both analysis and verification spend",
+    "covered_by": "",
+    "reason": "UNVERIFIABLE",
+    "source": "readthrough/store.py#Store.token_totals"
+   }
+  ],
+  "readthrough/types": [
+   {
+    "candidate": "Finding alias: one finding as a dict of keys that grows as it moves down the pipeline",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/types.py#Finding"
+   },
+   {
+    "candidate": "Results alias: the whole run's results as assembled for rendering",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/types.py#Results"
+   },
+   {
+    "candidate": "Json alias: one decoded JSON object from a model reply before validation",
+    "covered_by": "",
+    "reason": "INTERNAL_MECHANISM",
+    "source": "readthrough/types.py#Json"
+   }
+  ]
+ },
+ "lifted": {
+  "examples/basic": [],
+  "readthrough/cli": [],
+  "readthrough/console": [],
+  "readthrough/discover": [],
+  "readthrough/dockerfile": [
+   {
+    "from_source": "Dockerfile#USER",
+    "rule": "installation.container.runs-unprivileged: readthrough in the image never runs as root; it runs as fixed uid 10001"
+   },
+   {
+    "from_source": "readthrough/cli.py#cmd_scan",
+    "rule": "installation.container.reports-in-output-mount: the scanned tree is only read, so it can be mounted read-only"
+   }
+  ],
+  "readthrough/engine": [],
+  "readthrough/install": [],
+  "readthrough/lenses": [],
+  "readthrough/makefile": [],
+  "readthrough/merge": [],
+  "readthrough/readthrough": [],
+  "readthrough/report": [],
+  "readthrough/store": [
+   {
+    "from_source": "readthrough/store.py#Store.completed_keys",
+    "rule": "scan-runs.resume.completed-passes-not-repeated"
+   },
+   {
+    "from_source": "readthrough/store.py#Store.raw_findings",
+    "rule": "scan-runs.resume.only-current-content-reported"
+   },
+   {
+    "from_source": "readthrough/store.py#Store.tasks",
+    "rule": "scan-runs.resume.edited-file-shown-unreviewed"
+   },
+   {
+    "from_source": "readthrough/store.py#Store.record_task",
+    "rule": "scan-runs.resume.forced-rescan-replaces-findings"
+   },
+   {
+    "from_source": "readthrough/store.py#Store.record_task",
+    "rule": "scan-runs.interrupts.pass-recorded-whole-or-retried"
+   },
+   {
+    "from_source": "readthrough/store.py#Store.token_totals",
+    "rule": "scan-runs.usage.tokens-include-verification"
+   }
+  ],
+  "readthrough/types": []
+ },
+ "retired": [],
+ "scenarios": {
+  "analysis.lens-catalog.001": {
+   "file": "specs/analysis/lens-catalog/listing-lenses.feature",
+   "fingerprint": "5262300a572b",
+   "human": false,
+   "rule": "cli.lenses.lists-with-defaults-marked",
+   "source": "readthrough/cli.py#cmd_lenses",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "analysis.lens-catalog.002": {
+   "file": "specs/analysis/lens-catalog/lens-catalog.feature",
+   "fingerprint": "2b2ca39e467e",
+   "human": false,
+   "rule": "analysis.lenses.catalog-listed",
+   "source": "readthrough/lenses.py#LENSES",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "analysis.lens-catalog.003": {
+   "file": "specs/analysis/lens-catalog/lens-catalog.feature",
+   "fingerprint": "63a7dcd5ded1",
+   "human": false,
+   "rule": "analysis.lenses.default-set",
+   "source": "readthrough/lenses.py#DEFAULT_LENSES",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "analysis.lens-catalog.004": {
+   "file": "specs/analysis/lens-catalog/lens-catalog.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "analysis.lenses.unknown-refused",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "verified",
+   "test": "tests/test_smoke.py#test_unknown_lens_is_rejected_before_spending_anything",
+   "tests": [
+    "tests/test_smoke.py#test_unknown_lens_is_rejected_before_spending_anything"
+   ]
+  },
+  "analysis.lens-catalog.005": {
+   "file": "specs/analysis/lens-catalog/lens-catalog.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "analysis.lenses.empty-selection-runs-nothing",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "analysis.response-parsing.001": {
+   "file": "specs/analysis/response-parsing/reading-model-findings.feature",
+   "fingerprint": "d9cb296e0c7c",
+   "human": false,
+   "rule": "analysis.response-parsing.wrapped-reply-accepted",
+   "source": "readthrough/engine.py#_extract_json",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "analysis.response-parsing.002": {
+   "file": "specs/analysis/response-parsing/reading-model-findings.feature",
+   "fingerprint": "750494683cd3",
+   "human": false,
+   "rule": "analysis.response-parsing.findings-confined-to-shown-lines",
+   "source": "readthrough/engine.py#_clean_findings",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "analysis.response-parsing.003": {
+   "file": "specs/analysis/response-parsing/reading-model-findings.feature",
+   "fingerprint": "750494683cd3",
+   "human": false,
+   "rule": "analysis.response-parsing.unknown-labels-default",
+   "source": "readthrough/engine.py#_clean_findings",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "codebase-intake.chunking.001": {
+   "file": "specs/codebase-intake/chunking/chunking.feature",
+   "fingerprint": "ba5493fb02da",
+   "human": false,
+   "rule": "intake.chunking.overlapping-windows",
+   "source": "readthrough/discover.py#chunk_file",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "codebase-intake.file-discovery.001": {
+   "file": "specs/codebase-intake/file-discovery/file-discovery.feature",
+   "fingerprint": "979242bb27af",
+   "human": false,
+   "rule": "intake.discovery.honours-gitignore",
+   "source": "readthrough/discover.py#_git_tracked",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "codebase-intake.file-discovery.002": {
+   "file": "specs/codebase-intake/file-discovery/file-discovery.feature",
+   "fingerprint": "06584cb55c57",
+   "human": false,
+   "rule": "intake.discovery.hidden-dirs-depend-on-git",
+   "source": "readthrough/discover.py#_walk",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "codebase-intake.file-filtering.001": {
+   "file": "specs/codebase-intake/file-filtering/file-filtering.feature",
+   "fingerprint": "86aecc17c34c",
+   "human": false,
+   "rule": "intake.filtering.eligible-source-file",
+   "source": "readthrough/discover.py#discover_files",
+   "status": "verified",
+   "test": "tests/test_smoke.py#test_coverage_accounts_for_every_file",
+   "tests": [
+    "tests/test_smoke.py#test_coverage_accounts_for_every_file"
+   ]
+  },
+  "codebase-intake.file-filtering.002": {
+   "file": "specs/codebase-intake/file-filtering/file-filtering.feature",
+   "fingerprint": "86aecc17c34c",
+   "human": false,
+   "rule": "intake.filtering.skip-reason-recorded",
+   "source": "readthrough/discover.py#discover_files",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "codebase-intake.file-filtering.003": {
+   "file": "specs/codebase-intake/file-filtering/file-filtering.feature",
+   "fingerprint": "86aecc17c34c",
+   "human": false,
+   "rule": "intake.filtering.out-of-scope-files-omitted",
+   "source": "readthrough/discover.py#discover_files",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "codebase-intake.file-filtering.004": {
+   "file": "specs/codebase-intake/file-filtering/file-filtering.feature",
+   "fingerprint": "86aecc17c34c",
+   "human": false,
+   "rule": "intake.filtering.extension-allowlist",
+   "source": "readthrough/discover.py#discover_files",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "command-line.commands-and-options.001": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "cli.scan.refuses-invalid-invocation",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "verified",
+   "test": "tests/test_smoke.py#test_unknown_lens_is_rejected_before_spending_anything",
+   "tests": [
+    "tests/test_smoke.py#test_unknown_lens_is_rejected_before_spending_anything"
+   ]
+  },
+  "command-line.commands-and-options.002": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "cli.scan.writes-full-report-set",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.commands-and-options.003": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "097ee179deef",
+   "human": false,
+   "rule": "cli.scan.summary-shows-coverage-and-failures",
+   "source": "readthrough/cli.py#_summarise",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.commands-and-options.004": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "cli.scan.rerun-resumes-completed-passes",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.commands-and-options.005": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "cli.scan.estimate-only-spends-nothing",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.commands-and-options.006": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "cli.scan.limit-reviews-largest-files",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.commands-and-options.007": {
+   "file": "specs/command-line/commands-and-options/starting-a-scan.feature",
+   "fingerprint": "653353193115",
+   "human": false,
+   "rule": "cli.output.progress-on-stderr-unless-quiet",
+   "source": "readthrough/cli.py#Progress",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.entry-points.001": {
+   "file": "specs/command-line/entry-points/launching-readthrough.feature",
+   "fingerprint": "30e9cb2d8f12",
+   "human": false,
+   "rule": "command-line.entry-points.module-launch-matches-command",
+   "source": "readthrough/__main__.py#main",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "command-line.exit-codes.001": {
+   "file": "specs/command-line/exit-codes/interrupting-a-scan.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "cli.exit.findings-do-not-fail-the-run",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.exit-codes.002": {
+   "file": "specs/command-line/exit-codes/interrupting-a-scan.feature",
+   "fingerprint": "4a7338401edf",
+   "human": false,
+   "rule": "cli.interrupt.first-ctrl-c-stops-gracefully",
+   "source": "readthrough/cli.py#_install_sigint",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.exit-codes.003": {
+   "file": "specs/command-line/exit-codes/interrupting-a-scan.feature",
+   "fingerprint": "4a7338401edf",
+   "human": false,
+   "rule": "cli.interrupt.second-ctrl-c-forces-exit",
+   "source": "readthrough/cli.py#_install_sigint",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "command-line.progress-and-output.001": {
+   "file": "specs/command-line/progress-and-output/output-streams.feature",
+   "fingerprint": "39ce6a53ebf1",
+   "human": false,
+   "rule": "cli.output.results-on-stdout-diagnostics-on-stderr",
+   "source": "readthrough/console.py#err",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.corroboration.001": {
+   "file": "specs/findings/corroboration/corroborating-findings.feature",
+   "fingerprint": "7ccd1df41a34",
+   "human": false,
+   "rule": "findings.corroboration.distinct-classes-stay-separate-but-corroborate",
+   "source": "readthrough/merge.py#_annotate_colocation",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.deduplication.001": {
+   "file": "specs/findings/deduplication/merging-duplicate-findings.feature",
+   "fingerprint": "7fdf540636e0",
+   "human": false,
+   "rule": "findings.deduplication.nearby-same-class-findings-merge",
+   "source": "readthrough/merge.py#merge_findings",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.deduplication.002": {
+   "file": "specs/findings/deduplication/merging-duplicate-findings.feature",
+   "fingerprint": "c6eed6f0fcd0",
+   "human": false,
+   "rule": "findings.deduplication.category-aliases-share-a-class",
+   "source": "readthrough/merge.py#_family",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.deduplication.003": {
+   "file": "specs/findings/deduplication/merging-duplicate-findings.feature",
+   "fingerprint": "4c20ca333194",
+   "human": false,
+   "rule": "findings.deduplication.merged-finding-keeps-worst-case",
+   "source": "readthrough/merge.py#_collapse",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.deduplication.004": {
+   "file": "specs/findings/deduplication/merging-duplicate-findings.feature",
+   "fingerprint": "4c20ca333194",
+   "human": false,
+   "rule": "findings.deduplication.agreement-counts-independent-passes",
+   "source": "readthrough/merge.py#_collapse",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.deduplication.005": {
+   "file": "specs/findings/deduplication/merging-duplicate-findings.feature",
+   "fingerprint": "de76726daf7c",
+   "human": false,
+   "rule": "findings.deduplication.fingerprint-follows-file-class-and-span",
+   "source": "readthrough/merge.py#fingerprint",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.prioritisation.001": {
+   "file": "specs/findings/prioritisation/prioritising-findings.feature",
+   "fingerprint": "6f013fdaf026",
+   "human": false,
+   "rule": "findings.prioritisation.severity-adjusted-by-agreement-and-confidence",
+   "source": "readthrough/merge.py#priority_score",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.prioritisation.002": {
+   "file": "specs/findings/prioritisation/prioritising-findings.feature",
+   "fingerprint": "6f013fdaf026",
+   "human": false,
+   "rule": "findings.prioritisation.verification-verdict-moves-rank",
+   "source": "readthrough/merge.py#priority_score",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "findings.verification.001": {
+   "file": "specs/findings/verification/scan-verification.feature",
+   "fingerprint": "c56adc50a76d",
+   "human": false,
+   "rule": "cli.verify.only-at-or-above-threshold",
+   "source": "readthrough/cli.py#_verify",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "findings.verification.002": {
+   "file": "specs/findings/verification/scan-verification.feature",
+   "fingerprint": "c56adc50a76d",
+   "human": false,
+   "rule": "cli.verify.failure-recorded-as-uncertain",
+   "source": "readthrough/cli.py#_verify",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "installation.container-image.001": {
+   "file": "specs/installation/container-image/container-image.feature",
+   "fingerprint": "3c72c06bc4c9",
+   "human": false,
+   "rule": "installation.container.arguments-run-readthrough",
+   "source": "Dockerfile#ENTRYPOINT",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.container-image.002": {
+   "file": "specs/installation/container-image/container-image.feature",
+   "fingerprint": "471c379634b3",
+   "human": false,
+   "rule": "installation.container.no-arguments-shows-help",
+   "source": "Dockerfile#CMD",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.container-image.003": {
+   "file": "specs/installation/container-image/container-image.feature",
+   "fingerprint": "301385397ff7",
+   "human": false,
+   "rule": "installation.container.runs-unprivileged",
+   "source": "Dockerfile#USER",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.container-image.004": {
+   "file": "specs/installation/container-image/container-image.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "installation.container.reports-in-output-mount",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.container-image.005": {
+   "file": "specs/installation/container-image/container-image.feature",
+   "fingerprint": "5dfc2e22b879",
+   "human": false,
+   "rule": "installation.container.default-output-is-ephemeral",
+   "source": "readthrough/cli.py#cmd_scan",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.container-image.006": {
+   "file": "specs/installation/container-image/container-image.feature",
+   "fingerprint": "42d6c672cc68",
+   "human": false,
+   "rule": "installation.container.progress-streams-live",
+   "source": "Dockerfile#ENV",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.one-line-installer.001": {
+   "file": "specs/installation/one-line-installer/one-line-installer.feature",
+   "fingerprint": "b0f2ac9d8cc4",
+   "human": false,
+   "rule": "installation.installer.prefers-pipx",
+   "source": "install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.one-line-installer.002": {
+   "file": "specs/installation/one-line-installer/one-line-installer.feature",
+   "fingerprint": "b0f2ac9d8cc4",
+   "human": false,
+   "rule": "installation.installer.falls-back-to-pip-user",
+   "source": "install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.one-line-installer.003": {
+   "file": "specs/installation/one-line-installer/one-line-installer.feature",
+   "fingerprint": "b0f2ac9d8cc4",
+   "human": false,
+   "rule": "installation.installer.refuses-without-python",
+   "source": "install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.one-line-installer.004": {
+   "file": "specs/installation/one-line-installer/one-line-installer.feature",
+   "fingerprint": "b0f2ac9d8cc4",
+   "human": false,
+   "rule": "installation.installer.choose-ref",
+   "source": "install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.one-line-installer.005": {
+   "file": "specs/installation/one-line-installer/one-line-installer.feature",
+   "fingerprint": "b0f2ac9d8cc4",
+   "human": false,
+   "rule": "installation.installer.warns-when-not-on-path",
+   "source": "install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.one-line-installer.006": {
+   "file": "specs/installation/one-line-installer/one-line-installer.feature",
+   "fingerprint": "b0f2ac9d8cc4",
+   "human": false,
+   "rule": "installation.installer.confirms-install",
+   "source": "install.sh",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.packages.001": {
+   "file": "specs/installation/packages/install-from-working-tree.feature",
+   "fingerprint": "5797d5fdcbda",
+   "human": false,
+   "rule": "installation.working-tree.prefers-pipx",
+   "source": "Makefile#install",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.packages.002": {
+   "file": "specs/installation/packages/install-from-working-tree.feature",
+   "fingerprint": "5797d5fdcbda",
+   "human": false,
+   "rule": "installation.working-tree.falls-back-to-pip-user",
+   "source": "Makefile#install",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.packages.003": {
+   "file": "specs/installation/packages/install-from-working-tree.feature",
+   "fingerprint": "5797d5fdcbda",
+   "human": false,
+   "rule": "installation.working-tree.warns-when-not-on-path",
+   "source": "Makefile#install",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "installation.packages.004": {
+   "file": "specs/installation/packages/install-from-working-tree.feature",
+   "fingerprint": "60609c7fa1e9",
+   "human": false,
+   "rule": "installation.working-tree.uninstall-either-method",
+   "source": "Makefile#uninstall",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.coverage-reporting.001": {
+   "file": "specs/reporting/coverage-reporting/coverage-reporting.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.coverage.unreviewed-files-flagged-as-gaps",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.coverage-reporting.002": {
+   "file": "specs/reporting/coverage-reporting/coverage-reporting.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.coverage.partial-files-flagged",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.coverage-reporting.003": {
+   "file": "specs/reporting/coverage-reporting/coverage-reporting.feature",
+   "fingerprint": "e36a2f711158",
+   "human": false,
+   "rule": "reporting.coverage.not-started-files-flagged",
+   "source": "readthrough/report.py#build_results",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.coverage-reporting.004": {
+   "file": "specs/reporting/coverage-reporting/coverage-reporting.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.coverage.failed-passes-itemised",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "verified",
+   "test": "tests/test_smoke.py#test_coverage_accounts_for_every_file",
+   "tests": [
+    "tests/test_smoke.py#test_coverage_accounts_for_every_file"
+   ]
+  },
+  "reporting.coverage-reporting.005": {
+   "file": "specs/reporting/coverage-reporting/coverage-reporting.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.coverage.skipped-files-with-reasons",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.machine-exports.001": {
+   "file": "specs/reporting/machine-exports/machine-exports.feature",
+   "fingerprint": "795777fa6251",
+   "human": false,
+   "rule": "reporting.exports.all-formats-written",
+   "source": "readthrough/report.py#write_reports",
+   "status": "verified",
+   "test": "tests/test_smoke.py#test_scan_writes_every_report",
+   "tests": [
+    "tests/test_smoke.py#test_scan_writes_every_report",
+    "tests/test_smoke.py#test_coverage_accounts_for_every_file"
+   ]
+  },
+  "reporting.machine-exports.002": {
+   "file": "specs/reporting/machine-exports/machine-exports.feature",
+   "fingerprint": "4d38c4549438",
+   "human": false,
+   "rule": "reporting.sarif.severity-to-level",
+   "source": "readthrough/report.py#to_sarif",
+   "status": "verified",
+   "test": "tests/test_smoke.py#test_sarif_is_valid_json_with_a_run",
+   "tests": [
+    "tests/test_smoke.py#test_sarif_is_valid_json_with_a_run"
+   ]
+  },
+  "reporting.machine-exports.003": {
+   "file": "specs/reporting/machine-exports/machine-exports.feature",
+   "fingerprint": "4d38c4549438",
+   "human": false,
+   "rule": "reporting.sarif.rejected-findings-excluded",
+   "source": "readthrough/report.py#to_sarif",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.machine-exports.004": {
+   "file": "specs/reporting/machine-exports/machine-exports.feature",
+   "fingerprint": "4d38c4549438",
+   "human": false,
+   "rule": "reporting.sarif.valid-location-and-fingerprint",
+   "source": "readthrough/report.py#to_sarif",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.markdown-report.001": {
+   "file": "specs/reporting/markdown-report/markdown-report.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.markdown.answering-model-disclosed",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.markdown-report.002": {
+   "file": "specs/reporting/markdown-report/markdown-report.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.markdown.clean-result-stated",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.markdown-report.003": {
+   "file": "specs/reporting/markdown-report/markdown-report.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.markdown.severity-summary",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.markdown-report.004": {
+   "file": "specs/reporting/markdown-report/markdown-report.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.markdown.rejected-findings-set-aside",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.markdown-report.005": {
+   "file": "specs/reporting/markdown-report/markdown-report.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.markdown.finding-detail-content",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.markdown-report.006": {
+   "file": "specs/reporting/markdown-report/markdown-report.feature",
+   "fingerprint": "f9cfa81107d6",
+   "human": false,
+   "rule": "reporting.markdown.detail-capped-with-pointer",
+   "source": "readthrough/report.py#render_markdown",
+   "status": "inferred",
+   "test": "",
+   "tests": []
+  },
+  "reporting.report-rebuild.001": {
+   "file": "specs/reporting/report-rebuild/rebuilding-reports.feature",
+   "fingerprint": "a7d8239de8c1",
+   "human": false,
+   "rule": "cli.report.rebuild-to-files-or-stdout",
+   "source": "readthrough/cli.py#cmd_report",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "reporting.report-rebuild.002": {
+   "file": "specs/reporting/report-rebuild/rebuilding-reports.feature",
+   "fingerprint": "a7d8239de8c1",
+   "human": false,
+   "rule": "cli.report.missing-state-refused",
+   "source": "readthrough/cli.py#cmd_report",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "reporting.report-rebuild.003": {
+   "file": "specs/reporting/report-rebuild/rebuilding-reports.feature",
+   "fingerprint": "553644e568bd",
+   "human": false,
+   "rule": "cli.output.closed-pipe-is-not-an-error",
+   "source": "readthrough/cli.py#main",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "scan-runs.multi-scan.001": {
+   "file": "specs/scan-runs/multi-scan/multi-repository-scan.feature",
+   "fingerprint": "855ce837201e",
+   "human": false,
+   "rule": "cli.multi.repo-list-sources",
+   "source": "readthrough/cli.py#cmd_multi",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "scan-runs.multi-scan.002": {
+   "file": "specs/scan-runs/multi-scan/multi-repository-scan.feature",
+   "fingerprint": "855ce837201e",
+   "human": false,
+   "rule": "cli.multi.failed-repo-recorded-in-rollup",
+   "source": "readthrough/cli.py#cmd_multi",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "scan-runs.multi-scan.003": {
+   "file": "specs/scan-runs/multi-scan/multi-repository-scan.feature",
+   "fingerprint": "855ce837201e",
+   "human": false,
+   "rule": "cli.multi.rollup-ranks-by-risk",
+   "source": "readthrough/cli.py#cmd_multi",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  },
+  "scan-runs.multi-scan.004": {
+   "file": "specs/scan-runs/multi-scan/multi-repository-scan.feature",
+   "fingerprint": "855ce837201e",
+   "human": false,
+   "rule": "cli.multi.ctrl-c-stops-remaining-repos",
+   "source": "readthrough/cli.py#cmd_multi",
+   "status": "gap",
+   "test": "",
+   "tests": []
+  }
+ },
+ "taxonomy": {
+  "domains": [
+   {
+    "areas": [
+     {
+      "description": "Finding the files to audit, preferring git-tracked files and falling back to a directory walk.",
+      "slug": "file-discovery",
+      "title": "File discovery"
+     },
+     {
+      "description": "Excluding binary, oversized, tiny, excluded or wrong-extension files while recording why each one was skipped.",
+      "slug": "file-filtering",
+      "title": "File filtering and skip reasons"
+     },
+     {
+      "description": "Splitting each file into overlapping line ranges sized for a single model call, and reading code spans back out.",
+      "slug": "chunking",
+      "title": "Chunking"
+     },
+     {
+      "description": "Hashing file content so unchanged files and chunks are recognised across runs.",
+      "slug": "content-identity",
+      "title": "Content identity"
+     }
+    ],
+    "description": "How a repository is turned into a complete, accounted-for set of reviewable pieces before any analysis runs.",
+    "slug": "codebase-intake",
+    "title": "Codebase intake"
+   },
+   {
+    "areas": [
+     {
+      "description": "The built-in review lenses (injection, authorization, secrets, logic, errors, concurrency, data) and how they are listed and selected.",
+      "slug": "lens-catalog",
+      "title": "Lens catalog"
+     },
+     {
+      "description": "Sending one request per lens per chunk to the Claude API with model, token, thinking-effort and retry settings.",
+      "slug": "model-calls",
+      "title": "Model calls"
+     },
+     {
+      "description": "Extracting findings from the model's reply and cleaning them to valid line ranges and fields.",
+      "slug": "response-parsing",
+      "title": "Response parsing"
+     },
+     {
+      "description": "Distinguishing transient from permanent errors so every failed pass is recorded rather than lost.",
+      "slug": "failure-handling",
+      "title": "Failure handling"
+     },
+     {
+      "description": "A free, network-free stand-in for the model that drives the entire pipeline for tests and evaluation.",
+      "slug": "offline-mode",
+      "title": "Offline fake mode"
+     }
+    ],
+    "description": "The focused review passes the model runs over each chunk of code.",
+    "slug": "analysis",
+    "title": "Analysis"
+   },
+   {
+    "areas": [
+     {
+      "description": "Scanning one repository through discovery, analysis, merging, optional verification and reporting.",
+      "slug": "single-scan",
+      "title": "Single-repository scan"
+     },
+     {
+      "description": "Scanning many repositories in one invocation with a combined summary.",
+      "slug": "multi-scan",
+      "title": "Multi-repository scan"
+     },
+     {
+      "description": "Skipping already-completed work on rerun, forcing a rescan, and repeating passes for more coverage.",
+      "slug": "resume-and-repeat",
+      "title": "Resume and repeat passes"
+     },
+     {
+      "description": "The per-scan SQLite database of files, tasks, findings, verdicts and metadata, safe under concurrent workers.",
+      "slug": "scan-state",
+      "title": "Scan state"
+     },
+     {
+      "description": "Running passes on a worker pool and stopping cleanly on Ctrl-C without losing recorded work.",
+      "slug": "parallelism-and-interrupts",
+      "title": "Parallelism and interruption"
+     },
+     {
+      "description": "Estimating work before spending and tracking input and output token totals.",
+      "slug": "cost-estimation",
+      "title": "Cost and usage"
+     }
+    ],
+    "description": "Running an audit end to end over one or many repositories and keeping its state.",
+    "slug": "scan-runs",
+    "title": "Scan runs"
+   },
+   {
+    "areas": [
+     {
+      "description": "Merging overlapping findings from different passes into one by file, category family and line range.",
+      "slug": "deduplication",
+      "title": "Deduplication"
+     },
+     {
+      "description": "Noting when several lenses or repeats flag the same or nearby code.",
+      "slug": "corroboration",
+      "title": "Corroboration"
+     },
+     {
+      "description": "Scoring and ordering findings by severity, confidence and agreement.",
+      "slug": "prioritisation",
+      "title": "Prioritisation"
+     },
+     {
+      "description": "An optional second model pass that confirms or rejects findings above a chosen severity.",
+      "slug": "verification",
+      "title": "Verification"
+     }
+    ],
+    "description": "Turning raw per-pass findings into a deduplicated, ranked and checked list.",
+    "slug": "findings",
+    "title": "Findings"
+   },
+   {
+    "areas": [
+     {
+      "description": "Showing which files were scanned, skipped or failed so a clean report is distinguishable from an empty one.",
+      "slug": "coverage-reporting",
+      "title": "Coverage reporting"
+     },
+     {
+      "description": "The human-readable report with coverage, findings summary, detailed findings and appendix.",
+      "slug": "markdown-report",
+      "title": "Markdown report"
+     },
+     {
+      "description": "Writing findings as JSON and SARIF for CI and code-scanning integrations.",
+      "slug": "machine-exports",
+      "title": "Machine-readable exports"
+     },
+     {
+      "description": "Regenerating reports from an existing scan database, to files or standard output.",
+      "slug": "report-rebuild",
+      "title": "Report rebuild"
+     }
+    ],
+    "description": "Presenting scan results to people and to other tools.",
+    "slug": "reporting",
+    "title": "Reporting"
+   },
+   {
+    "areas": [
+     {
+      "description": "The scan, multi, report and lenses commands, their flags and environment defaults.",
+      "slug": "commands-and-options",
+      "title": "Commands and options"
+     },
+     {
+      "description": "Live progress, end-of-run summaries and separation of normal output from errors.",
+      "slug": "progress-and-output",
+      "title": "Progress and console output"
+     },
+     {
+      "description": "Exit status reflecting whether the run worked, never whether findings were found.",
+      "slug": "exit-codes",
+      "title": "Exit codes"
+     },
+     {
+      "description": "Launching as the readthrough console command or as a Python module, and the package version.",
+      "slug": "entry-points",
+      "title": "Entry points"
+     }
+    ],
+    "description": "How users invoke readthrough and what it tells them.",
+    "slug": "command-line",
+    "title": "Command line"
+   },
+   {
+    "areas": [
+     {
+      "description": "A curl-to-shell installer that prefers pipx, falls back to pip, and supports choosing a ref.",
+      "slug": "one-line-installer",
+      "title": "One-line installer"
+     },
+     {
+      "description": "A Docker image that runs readthrough against a mounted repository.",
+      "slug": "container-image",
+      "title": "Container image"
+     },
+     {
+      "description": "Building wheel and source distributions and installing or uninstalling from a working tree.",
+      "slug": "packages",
+      "title": "Packages"
+     }
+    ],
+    "description": "Getting readthrough onto a machine or into a pipeline.",
+    "slug": "installation",
+    "title": "Installation and distribution"
+   },
+   {
+    "areas": [
+     {
+      "description": "Make targets for setup, linting, type-checking, tests, docs serving and cleanup.",
+      "slug": "dev-tasks",
+      "title": "Development tasks"
+     },
+     {
+      "description": "A runnable example and make target that audit this repository with itself offline at no cost.",
+      "slug": "self-scan-example",
+      "title": "Self-scan example"
+     }
+    ],
+    "description": "Tasks and examples for people working on readthrough itself.",
+    "slug": "developer-tooling",
+    "title": "Developer tooling"
+   }
+  ]
+ }
+}
