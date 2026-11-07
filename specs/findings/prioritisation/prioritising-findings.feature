@@ -3,7 +3,7 @@ Feature: Prioritising findings
   Operators read the report, console summary and multi-repository rollup with the findings most worth fixing first, ranked by severity adjusted for agreement, confidence and verification.
 
   Background:
-    Given Given a scan of a repository has completed with merged findings
+    Given a scan of a repository has completed with merged findings
 
   @id:findings.prioritisation.001 @rule:findings.prioritisation.severity-adjusted-by-agreement-and-confidence @inferred @source:readthrough/merge.py#priority_score @questionable
   Scenario Outline: Findings are ordered by severity, adjusted by agreement, corroboration and confidence
@@ -17,7 +17,7 @@ Feature: Prioritising findings
       | high, confidence medium, agreement 1                           | medium, confidence medium, agreement 1 | A     | B      |
       | medium, confidence high, agreement 3                           | medium, confidence low, agreement 1    | A     | B      |
       | medium, confidence high, agreement 5, corroborated by 8 passes | high, confidence low, agreement 1      | A     | B      |
-      | low, confidence medium, agreement 9                            | low, confidence medium, agreement 5    | A     | B      |
+      | low, confidence medium, agreement 3                            | low, confidence medium, agreement 1    | A     | B      |
 
   @id:findings.prioritisation.002 @rule:findings.prioritisation.verification-verdict-moves-rank @inferred @source:readthrough/merge.py#priority_score
   Scenario Outline: A confirmed finding rises and a rejected finding sinks in the ranking

@@ -9,9 +9,9 @@ Feature: Branding the documentation site
   Scenario: The docs and the splash page share one orange-red accent palette
     Given the theme's accent pair is orange #fb923c and red #ef4444
     When the reader opens the splash page and then the rendered docs
-    Then the docs header, chrome and primary colour use red #ef4444
+    Then the docs primary colour is red #ef4444
     And the docs interactive accent uses orange #fb923c
-    And the splash page headline and install button use the same orange-to-red pair
+    And the splash page headline and its GitHub button use the same orange-to-red pair
 
   @id:docs.documentation.docs-theme.002 @rule:docs.theme.links-legible-per-scheme @inferred @source:docs/stylesheets/extra.css#[data-md-color-scheme="slate"]
   Scenario Outline: Links stay readable in both light and dark schemes

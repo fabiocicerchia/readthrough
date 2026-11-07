@@ -3,7 +3,7 @@ Feature: Merging duplicate findings
   Operators triaging an audit see each defect once, however many lenses, repeats or overlapping chunks reported it, so the report reads as a list of defects rather than a list of model replies.
 
   Background:
-    Given Given a scan of a repository has completed with raw findings from several passes
+    Given a scan of a repository has completed with raw findings from several passes
 
   @id:findings.deduplication.001 @rule:findings.deduplication.nearby-same-class-findings-merge @inferred @source:readthrough/merge.py#merge_findings
   Scenario Outline: Findings of the same class in the same file at overlapping or nearby lines become one finding
@@ -22,8 +22,8 @@ Feature: Merging duplicate findings
 
   @id:findings.deduplication.002 @rule:findings.deduplication.category-aliases-share-a-class @inferred @source:readthrough/merge.py#_family
   Scenario Outline: Different names for the same defect are merged under one defect class
-    Given the authorization lens reported "<first>" in "app/views.py" at lines 40-42
-    And the logic lens reported "<second>" in "app/views.py" at lines 41-44
+    Given one pass reported "<first>" in "app/views.py" at lines 40-42
+    And another pass reported "<second>" in "app/views.py" at lines 41-44
     When the operator builds the report
     Then the report lists one finding at "app/views.py":40-44
     And the finding is shown with class "<class>"
@@ -47,12 +47,12 @@ Feature: Merging duplicate findings
 
   @id:findings.deduplication.004 @rule:findings.deduplication.agreement-counts-independent-passes @inferred @source:readthrough/merge.py#_collapse
   Scenario: Agreement counts independent passes, not repeated reports from one pass
-    Given the scan ran lenses injection and logic with 2 repeats
-    And the injection lens reported the same defect from two overlapping chunks in its first repeat
-    And the logic lens reported it in its second repeat
+    Given the scan ran lenses injection and data with 2 repeats
+    And the injection lens reported a missing-input-validation defect from two overlapping chunks in its first repeat
+    And the data lens reported it as type-confusion in its second repeat
     When the operator builds the report
     Then the finding shows "agreement 2/4"
-    And the finding shows it was found by injection and logic
+    And the finding shows it was found by data and injection
 
   @id:findings.deduplication.005 @rule:findings.deduplication.fingerprint-follows-file-class-and-span @inferred @source:readthrough/merge.py#fingerprint @questionable
   Scenario: A finding keeps its fingerprint only while its file, class and line span stay the same

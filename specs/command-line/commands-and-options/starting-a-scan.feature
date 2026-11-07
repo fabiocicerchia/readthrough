@@ -50,9 +50,9 @@ Feature: Starting a scan of one repository
     And the token totals in findings.json <tokens>
 
     Examples:
-      | flag            | outcome                                                             | tokens                                  |
-      | without --force | it prints "resuming: N passes already complete" and "nothing to do" | are unchanged from the first run        |
-      | with --force    | every planned pass runs again                                       | grow by the cost of the repeated passes |
+      | flag            | outcome                                                             | tokens                                                   |
+      | without --force | it prints "resuming: N passes already complete" and "nothing to do" | are unchanged from the first run                         |
+      | with --force    | every planned pass runs again                                       | count each pass's latest run only, not both runs summed |
 
   @id:command-line.commands-and-options.005 @rule:cli.scan.estimate-only-spends-nothing @gap @source:readthrough/cli.py#cmd_scan @questionable
   Scenario: An estimate-only scan reports expected token use without running any pass or writing reports

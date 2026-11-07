@@ -17,7 +17,7 @@ Feature: Interrupting a scan and the exit status
     When the operator presses Ctrl-C once
     Then standard error shows "stopping after in-flight passes finish; progress is saved, re-run the same command to resume (Ctrl-C again to force)"
     And passes not yet started are not run and verification is skipped
-    And the reports are written, counting the unrun passes' files as not yet covered
+    And the reports are written, counting files with no finished pass as never started
     And the command exits with status 0
 
   @id:command-line.exit-codes.003 @rule:cli.interrupt.second-ctrl-c-forces-exit @gap @source:readthrough/cli.py#_install_sigint

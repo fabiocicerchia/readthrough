@@ -7,9 +7,9 @@ Feature: Launching readthrough
     Given readthrough is installed in the operator's Python environment
     When the operator runs "python -m readthrough <arguments>"
     Then the same command runs as for "readthrough <arguments>"
-    And the process exits with the status that command returns
+    And the process exits with status <exit status>
 
     Examples:
-      | arguments                              | exit status |
-      | lenses                                 | 0           |
-      | scan . --fake, interrupted with Ctrl-C | 130         |
+      | arguments                                    | exit status |
+      | lenses                                       | 0           |
+      | scan . --fake, interrupted with Ctrl-C twice | 130         |

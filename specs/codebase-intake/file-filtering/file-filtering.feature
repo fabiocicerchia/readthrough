@@ -7,7 +7,7 @@ Feature: Deciding which files get reviewed
 
   @id:codebase-intake.file-filtering.001 @rule:intake.filtering.eligible-source-file @verified @source:readthrough/discover.py#discover_files @test:tests/test_smoke.py#test_coverage_accounts_for_every_file
   Scenario: A readable source file of a known language within the limits is queued for review
-    Given the repository contains "app/db.py", a 12-line Python text file of 400 bytes
+    Given the repository contains "app/db.py", a 400-byte Python text file of 12 lines with no newline after the last one
     When the operator scans the repository with default settings
     Then "app/db.py" is counted as eligible
     And the console reports "1 files eligible, 0 skipped, 12 lines"
@@ -32,7 +32,7 @@ Feature: Deciding which files get reviewed
     Given the repository contains "<file>", which <why>
     When the operator scans the repository with <options>
     Then "<file>" is not reviewed
-    And "<file>" appears in neither the eligible nor the skipped files of the coverage report
+    And "<file>" is neither counted as eligible nor listed as skipped in the coverage report
 
     Examples:
       | file                       | why                                     | options             |
