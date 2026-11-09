@@ -9,6 +9,13 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/fabiocicerchia/readthrough/badge)](https://securityscorecards.dev/viewer/?uri=github.com/fabiocicerchia/readthrough)
 [![CI carbon](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/fabiocicerchia/readthrough/gh-pages/badge.json)](.github/workflows/carbon-badge.yml)
 
+> [!WARNING]
+> **This project is retired** and no longer maintained. If you need something
+> for this, [open-code-review](https://github.com/alibaba/open-code-review)
+> combines deterministic pipelines with an LLM agent to produce line-level
+> review findings. It is a separate project, actively developed, and worth a
+> look.
+
 Built for the case where you have many repositories and need to know not just
 what was found, but what was actually looked at.
 
